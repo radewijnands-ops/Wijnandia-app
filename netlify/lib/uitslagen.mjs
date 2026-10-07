@@ -19,7 +19,7 @@ export async function zoekNieuweUitslagen() {
     if (!Array.isArray(resultaten)) continue;
 
     const ons = resultaten.filter(w => (isOns(w.home, club.name, team) || isOns(w.away, club.name, team)) && isGespeeld(w));
-    const sleutelNaam = "team_" + team.code.replace(/[^a-z0-9+]/gi, "_");
+    const sleutelNaam = "team_" + String(team.code).replace(/[^a-z0-9+]/gi, "_");
     const bekend = await gezien.get(sleutelNaam, { type: "json" }).catch(() => null);
     const sleutels = ons.map(wedstrijdSleutel);
 

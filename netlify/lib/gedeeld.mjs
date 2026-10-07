@@ -125,7 +125,7 @@ export function isOns(naam, clubNaam, team) {
   if (!naam) return false;
   const n = naam.trim().toLowerCase();
   if (team?.label && n === team.label.toLowerCase()) return true;
-  if (team?.code === "1" && clubNaam && n === String(clubNaam).toLowerCase()) return true;
+  if (String(team?.code) === "1" && clubNaam && n === String(clubNaam).toLowerCase()) return true;
   return false;
 }
 
@@ -140,14 +140,22 @@ export function isGespeeld(w) {
 /* ---------- Club en teams ophalen ----------
    Normaal via het cluboverzicht (/clubs/w/wijnandia/). Geeft de API-sleutel alleen
    toegang tot één team (bv. /clubs/w/wijnandia/1/), dan valt dit terug op dat team. */
+/* Teamgegevens gelijk trekken: HollandseVelden geeft het teamnummer soms als getal (1) */
+export function normTeam(t, clubNaam) {
+  const code = String(t?.code ?? "").trim();
+  return { ...t, code, label: String(t?.label || t?.name || `${clubNaam || ""} ${code}`).trim() };
+}
 export async function clubEnTeams() {
   const clubPad = instelling.clubPad();
   const overzicht = await hvJson(clubPad);
-  if (overzicht?.club?.teams?.length) return { club: overzicht.club, teams: overzicht.club.teams };
+  if (overzicht?.club?.teams?.length) {
+    const teams = overzicht.club.teams.map(t => normTeam(t, overzicht.club.name));
+    return { club: { ...overzicht.club, teams }, teams };
+  }
   const code = instelling.voorspelTeam();
   const los = await hvJson(clubPad + code + "/");
   if (los?.club) {
-    const team = los.club.team || { code, label: `${los.club.name} ${code}` };
+    const team = normTeam(los.club.team || los.club.teams?.find(t => String(t.code) === code) || { code }, los.club.name);
     return { club: { ...los.club, teams: [team] }, teams: [team], alleenEenTeam: true };
   }
   return null;

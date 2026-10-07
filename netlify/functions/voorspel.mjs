@@ -21,7 +21,7 @@ async function zoekWedstrijd(r) {
   const ct = await clubEnTeams();
   const club = ct?.club;
   if (!club) return { fout: "geen-gegevens" };
-  const team = club.teams?.find(t => t.code === code) || { code, label: club.name + " " + code };
+  const team = club.teams?.find(t => String(t.code) === String(code)) || { code, label: club.name + " " + code };
   const data = await hvJson(clubPad + code + "/");
   const c = data?.competition;
   if (!c) return { fout: "geen-gegevens" };

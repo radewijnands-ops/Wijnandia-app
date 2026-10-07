@@ -626,7 +626,7 @@ function stamp(datum,tijd){return datum.replace(/-/g,"")+"T"+tijd.replace(":",""
 function dagNa(datum){const d=new Date(datum+"T12:00");d.setDate(d.getDate()+1);
   return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());}
 function esc(s){return (s||"").replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");}
-function html(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function html(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 const VTZ=["BEGIN:VTIMEZONE","TZID:Europe/Amsterdam",
  "BEGIN:DAYLIGHT","TZOFFSETFROM:+0100","TZOFFSETTO:+0200","TZNAME:CEST","DTSTART:19700329T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","END:DAYLIGHT",
@@ -755,7 +755,8 @@ function isOns(naam){
   if(!naam||!hv.club) return false;
   const label=hv.team?.label||"", n=naam.trim().toLowerCase();
   if(label && n===label.toLowerCase()) return true;
-  if(hv.team?.code==="1" && n===String(hv.club.name).toLowerCase()) return true;
+  if(String(hv.team?.code)==="1" && n===String(hv.club.name).toLowerCase()) return true;
+  if(n===String(hv.club.name).toLowerCase() && hv.teams.length===1) return true;
   return false;
 }
 function isAfgelast(st){ return /afgelast|uitgesteld|vervallen|stopgezet|forfait/i.test(st||""); }
@@ -772,6 +773,7 @@ function routeLink(tegenstander){
   return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(doel);
 }
 /* ---------- hulpjes ---------- */
+function normTeam(t,clubNaam){ const code=String(t?.code??"").trim(); return {...t,code,label:String(t?.label||t?.name||`${clubNaam||""} ${code}`).trim()}; }
 function uitkomst(w){ // W/G/V vanuit Wijnandia gezien, of null
   if(!w.result||isAfgelast(w.status)) return null;
   const thuis=isOns(w.home), uit=isOns(w.away); if(!thuis&&!uit) return null;
@@ -793,15 +795,17 @@ function vormBolletjes(vorm,klein){
   return `<span class="vorm${klein?" mini":""}">${vorm.map(u=>`<span class="v-${u}" title="${UITKOMST[u]}">${klein?"":u}</span>`).join("")}</span>`;
 }
 function initialen(naam){
-  const w=clubZonderTeam(naam).split(/\s+/).filter(x=>!/^(r\.?k\.?)?(s\.?v\.?|v\.?v\.?|f\.?c\.?|s\.?c\.?|rkvv|rksv|rkav|vv|sv|fc|sc)$/i.test(x));
+  const w=clubZonderTeam(naam).split(/[\s-]+/).map(x=>x.replace(/[^A-Za-zÀ-ÿ0-9]/g,"")).filter(x=>x&&!/^\d+$/.test(x)&&!/^(rk)?(sv|vv|fc|sc|rkvv|rksv|rkav)$/i.test(x));
   return (w.length>1?w[0][0]+w[1][0]:(w[0]||naam).slice(0,2)).toUpperCase();
 }
 function clubLogo(naam){
   if(isOns(naam)) return `<span class="club-logo ons"><img src="icon-192.png" alt=""></span>`;
   const f=shirtVan(naam);
-  return `<span class="club-logo">${f?`<img src="${HV.shirts}${html(f)}" alt="" onerror="this.replaceWith(document.createTextNode('${initialen(naam)}'))">`:initialen(naam)}</span>`;
+  const ini=html(initialen(naam));
+  return `<span class="club-logo">${f?`<img src="${HV.shirts}${html(f)}" alt="" data-i="${ini}" onerror="this.replaceWith(this.dataset.i)">`:ini}</span>`;
 }
 function rangTekst(n){ return n+"e"; }
+function kortNaam(n){ return isOns(n)?"Wijnandia":n; }   // in smalle lijsten: "RKVV Wijnandia" -> "Wijnandia"
 function dagenTot(d){ const a=new Date(); a.setHours(0,0,0,0); const b=new Date(d); b.setHours(0,0,0,0); return Math.round((b-a)/864e5); }
 function aftelTekst(d){ const n=dagenTot(d); return n<0?"Gespeeld":n===0?"Vandaag":n===1?"Morgen":`Over ${n} dagen`; }
 
@@ -876,9 +880,9 @@ function tekenWedstrijden(lijst,uitslag){
       ? `<span class="score${u?" v-"+u:""}">${w.homeGoals}<i>–</i>${w.awayGoals}</span>`
       : `<span class="tijd">${tijdTekst(w.d)}</span>`;
     h+=`<div class="wed${ons?" ons":""}">
-      <div class="ploeg">${clubLogo(w.home)}<span class="${isOns(w.home)?"ons-naam":""}">${html(w.home)}</span></div>
+      <div class="ploeg">${clubLogo(w.home)}<span class="${isOns(w.home)?"ons-naam":""}">${html(kortNaam(w.home))}</span></div>
       <div class="mid">${midden}${af?`<span class="badge">${html(w.status)}</span>`:""}</div>
-      <div class="ploeg uit">${clubLogo(w.away)}<span class="${isOns(w.away)?"ons-naam":""}">${html(w.away)}</span></div>
+      <div class="ploeg uit">${clubLogo(w.away)}<span class="${isOns(w.away)?"ons-naam":""}">${html(kortNaam(w.away))}</span></div>
       ${!uitslag&&!af&&isOns(w.away)&&!isOns(w.home)?`<a class="route" href="${routeLink(w.home)}" target="_blank" rel="noopener">📍 Route naar ${html(clubZonderTeam(w.home))}</a>`:""}
     </div>`;
   }
@@ -912,7 +916,7 @@ function toonStatus(t,vers){
   hvStatus.textContent=(vers?"Bijgewerkt om ":"Offline – laatst bijgewerkt ")+pad(d.getHours())+":"+pad(d.getMinutes())+(vers?"":" ("+d.getDate()+" "+MAANDEN[d.getMonth()]+")");
 }
 async function laadTeam(code){
-  const t=hv.teams.find(x=>x.code===code)||hv.teams[0]; if(!t) return;
+  const t=hv.teams.find(x=>x.code===String(code))||hv.teams[0]; if(!t) return;
   hv.team=t;
   document.querySelectorAll("#teams button").forEach(b=>b.classList.toggle("actief",b.dataset.code===t.code));
   try{localStorage.setItem("hv:team",t.code)}catch(e){}
@@ -942,14 +946,14 @@ async function startHv(){
   try{
     try{
       const r=await hvGet(HV.clubPad);
-      hv.club=r.v.club; hv.teams=r.v.club?.teams||[];
+      hv.club=r.v.club; hv.teams=(r.v.club?.teams||[]).map(t=>normTeam(t,r.v.club.name));
       if(!hv.teams.length) throw new Error("geen teams");
     }catch(e){
       if(["offline","geen-functies","geen-sleutel"].includes(e.reden)) throw e;
       // sleutel geeft alleen toegang tot één team: dan alleen dat team tonen
       const r=await hvGet(HV.clubPad+HV.team+"/");
       if(!r.v?.club) throw e;
-      hv.club=r.v.club; hv.teams=[r.v.club.team||{code:HV.team,label:r.v.club.name+" "+HV.team}];
+      hv.club=r.v.club; hv.teams=[normTeam(r.v.club.team||r.v.club.teams?.find(t=>String(t.code)===HV.team)||{code:HV.team},r.v.club.name)];
     }
     document.getElementById("hvLijsten").hidden=false;
     document.getElementById("teams").hidden=hv.teams.length<2;
@@ -1385,7 +1389,7 @@ async function laadQuizBord(){
 })();
 
 /* Tabs */
-const APP_VERSIE="1.2.1";
+const APP_VERSIE="1.2.2";
 document.getElementById("infoVersie").textContent=APP_VERSIE;
 const SPEL_DELEN=["voorspellen","motm","quiz"];
 let vorigeTab="uitslagen", spelDeel="voorspellen";

@@ -1,6 +1,6 @@
 /* Wijnandia web-app: zorgt dat de app snel opent en ook zonder internet start.
    Verhoog VERSIE na elke wijziging aan de app, dan krijgt iedereen de nieuwe versie. */
-const VERSIE = "wijnandia-v14";
+const VERSIE = "wijnandia-v15";
 const BESTANDEN = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "logo.png", "quiz/vragen.json"];
 
 self.addEventListener("install", e => {

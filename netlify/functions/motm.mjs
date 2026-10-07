@@ -18,7 +18,7 @@ async function laatsteWedstrijd() {
   const ct = await clubEnTeams();
   if (!ct) return { fout: "geen-gegevens" };
   const code = instelling.voorspelTeam();
-  const team = ct.teams.find(t => t.code === code) || { code, label: `${ct.club.name} ${code}` };
+  const team = ct.teams.find(t => String(t.code) === String(code)) || { code, label: `${ct.club.name} ${code}` };
   const data = await hvJson(instelling.clubPad() + code + "/");
   const res = (data?.competition?.results || [])
     .filter(w => (isOns(w.home, ct.club.name, team) || isOns(w.away, ct.club.name, team)) && isGespeeld(w))
