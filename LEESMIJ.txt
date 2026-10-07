@@ -1,0 +1,175 @@
+WIJNANDIA WEB-APP
+=================
+
+Mappen
+- public/                    de app zelf (wat leden op hun telefoon zien)
+    index.html               app: kleuren, activiteiten, clubadres, quiz-startdatum, sportparken
+    beheer.html              beheerpagina voor het bestuur (wachtwoord)
+    sw.js                    snel openen, offline, pushmeldingen tonen
+    manifest.webmanifest     naam, icoon en kleur van de geïnstalleerde app
+    logo.png, icon-*.png     logo en app-iconen
+    quiz/                    weekquiz: vragen.json + afbeeldingen
+- netlify/functions/         serveronderdelen op Netlify
+    hv.mjs                   tussenstap naar de HollandseVelden API (sleutel blijft geheim)
+    push.mjs                 aan-/afmelden voor pushmeldingen
+    uitslagen-check.mjs      kijkt elk kwartier naar nieuwe uitslagen en stuurt meldingen
+    voorspel.mjs             voorspellingen en leaderboard
+    nieuws.mjs               clubnieuws lezen
+    beheer.mjs               beheer door het bestuur (nieuws plaatsen, selectie)
+    motm.mjs                 Man of the Match: stemmen en seizoensklassement
+    quiz.mjs                 weekquiz: antwoorden en klassement
+- netlify/lib/               gedeelde code voor de functies
+- netlify.toml, package.json instellingen voor Netlify (niet aanpassen)
+
+
+ONLINE ZETTEN (eenmalig, ca. 15 minuten)
+----------------------------------------
+Netlify Drop (slepen) werkt NIET, omdat de serveronderdelen dan niet meedraaien.
+Gebruik GitHub + Netlify (beide gratis, geen programmeerkennis nodig):
+
+1. Maak een account op https://github.com en klik op "New repository".
+   Naam bijvoorbeeld: wijnandia-app. Kies "Private". Klik "Create repository".
+2. Klik op "uploading an existing file" en sleep de INHOUD van deze map erin
+   (dus de mappen public en netlify, plus netlify.toml en package.json).
+   Klik "Commit changes".
+3. Ga naar https://app.netlify.com > "Add new site" > "Import an existing project"
+   > GitHub > kies wijnandia-app > "Deploy". Netlify leest de instellingen zelf
+   uit netlify.toml; je hoeft niets in te vullen.
+4. In Netlify: Site configuration > Environment variables > "Add a variable":
+      HV_API_KEY        = de API-sleutel van HollandseVelden            (verplicht)
+      BEHEER_WACHTWOORD = wachtwoord voor de beheerpagina van het bestuur (verplicht
+                          voor clubnieuws en Man of the Match; kies iets sterks)
+   Optioneel:
+      HV_CLUB_PAD   = clubadres op HollandseVelden (standaard /clubs/w/wijnandia/)
+      VOORSPEL_TEAM = teamcode voor de voorspelling (standaard 1 = Wijnandia 1)
+      PUSH_CONTACT  = mailto:jouw@adres.nl (contactadres voor de pushdiensten)
+   Daarna bij Deploys op "Trigger deploy" klikken.
+
+Wijzigingen later: upload het gewijzigde bestand opnieuw in GitHub; Netlify zet de
+nieuwe versie dan automatisch online. Verhoog bij wijzigingen in public/ ook de
+VERSIE in public/sw.js (bv. v8 > v9), zodat iedereen de nieuwe versie krijgt.
+
+
+WEDSTRIJDEN (HollandseVelden API)
+---------------------------------
+Programma, uitslagen en stand van alle Wijnandia-teams. Zolang er geen sleutel is,
+toont de app automatisch de gewone HollandseVelden-embed (zondag 4B).
+
+Alle onderdelen (app, meldingen, voorspelling) delen één cache die het schema uit de
+API-handleiding volgt (ma-vr 4 uur, za/zo voor 15:00 1 uur, na 15:00 15 minuten).
+De API wordt dus nooit vaker aangeroepen dan toegestaan.
+
+Let op: de drie verplichte links naar Hollandse Velden, Voetbal in België en
+Ligues de Foot staan onderaan de app. Niet weghalen; daarmee is de API gratis.
+
+Toegang van de sleutel: heeft de sleutel toegang tot het hele clubadres
+(/clubs/w/wijnandia/), dan toont de app alle Wijnandia-teams. Geeft hij alleen toegang
+tot /clubs/w/wijnandia/1/, dan toont de app automatisch alleen Wijnandia 1 (de
+teamknoppen verdwijnen dan). Wil je alle teams, vraag HollandseVelden dan om toegang
+op de clubstam /clubs/w/wijnandia/.
+
+Clubadres controleren: zoek Wijnandia op www.hollandsevelden.nl. Is het adres niet
+www.hollandsevelden.nl/clubs/w/wijnandia/, pas het dan aan in public/index.html
+(bij "4. WEDSTRIJDEN", clubPad) EN zet HV_CLUB_PAD in Netlify.
+Test: open https://<jullie-adres>/api/hv/clubs/w/wijnandia/
+  401 = sleutel klopt niet of heeft geen recht op dit clubadres; 404 = clubadres klopt niet.
+
+
+PUSHMELDINGEN BIJ NIEUWE UITSLAGEN
+----------------------------------
+- Leden zetten meldingen aan met de schakelaar bovenaan het tabblad Wedstrijden.
+- Elk kwartier kijkt Netlify of er een nieuwe uitslag van een Wijnandia-team is
+  (alle teams) en stuurt dan één melding, bv. "⚽ Wijnandia – Tegenstander: 3-1".
+- iPhone: werkt alleen als de app op het beginscherm staat (iOS 16.4 of nieuwer).
+- De eerste keer dat de controle draait, worden bestaande uitslagen alleen onthouden;
+  er gaan dan nog geen meldingen uit. Uitslagen ouder dan 3 dagen worden niet gemeld.
+- De beveiligingssleutels voor de meldingen maakt Netlify zelf aan; je hoeft niets
+  in te stellen.
+- Controleren of het draait: Netlify > Logs > Functions > uitslagen-check.
+
+
+VOORSPELLEN
+-----------
+- Een ronde loopt van dinsdag 00:00 tot de volgende dinsdag 00:00. Op dinsdag begint
+  dus automatisch een nieuwe ronde met een leeg leaderboard.
+- Er wordt voorspeld op de wedstrijd van Wijnandia 1 in die week (VOORSPEL_TEAM).
+- Leden vullen hun naam en de uitslag in en bevestigen. Daarna kan het niet meer
+  worden aangepast. De server staat per ronde één voorspelling per naam en één per
+  telefoon toe.
+- Voorspellen kan tot de aftrap. Is de aanvangstijd nog niet bekend, dan sluit het
+  om 00:00 op de wedstrijddag.
+- Vóór de aftrap ziet iedereen alleen wie er heeft voorspeld; vanaf de aftrap zijn
+  alle voorspellingen zichtbaar.
+- Punten: exacte uitslag 3, juiste winnaar of gelijkspel 1. Bij gelijke punten staat
+  bovenaan wie het eerst voorspelde.
+- Speelt Wijnandia 1 een week niet, dan staat er dat er geen wedstrijd is.
+- Een voorspelling verwijderen (bv. een grappige naam): Netlify > Blobs >
+  store "voorspellingen" > zoek de ronde (datum van de dinsdag) en verwijder de regel.
+
+
+WEEKQUIZ
+--------
+Rechtsonder staat een stuiterende vraagtekenknop. Elke zondag om 06:00 (Nederlandse
+tijd) verschijnt automatisch een nieuwe vraag; na vraag 100 begint de reeks opnieuw.
+- Vragen: public/quiz/vragen.json; foto's: public/quiz/afbeeldingen/
+- Startdatum: in public/index.html bij "5. WEEKQUIZ": QUIZ_START = "2026-10-04T06:00"
+  (de zondag waarop vraag 1 begon).
+
+
+INSTALLEREN OP DE TELEFOON
+--------------------------
+- Android (Chrome): open het adres en tik op "Installeer app" bovenin,
+  of menu (⋮) > "App installeren".
+- iPhone (Safari): tik op Deel > "Zet op beginscherm".
+
+
+AANPASSEN
+---------
+- Kleuren: bovenaan public/index.html (--club-primair, --club-secundair, --club-accent).
+- Activiteiten: in public/index.html bij "3. ACTIVITEITEN".
+
+
+CLUBNIEUWS (BEHEERPAGINA)
+-------------------------
+- Het bestuur gaat naar https://wijnandia.netlify.app/beheer.html en logt in met
+  het wachtwoord uit BEHEER_WACHTWOORD. (De pagina staat niet in de app zelf.)
+- Tabblad Clubnieuws: titel, tekst en eventueel een link invullen. Met het vinkje
+  gaat er ook een pushmelding uit. Berichten verwijderen kan in dezelfde lijst.
+- In de app staat het nieuws onder het tabblad Nieuws. Een rood stipje op het
+  tabblad betekent dat er een nieuw bericht is.
+- Leden kiezen zelf welke meldingen ze willen: bij Wedstrijden zetten ze meldingen
+  voor uitslagen aan, bij Nieuws die voor clubnieuws.
+- Wachtwoord wijzigen: pas BEHEER_WACHTWOORD aan in Netlify en doe een nieuwe deploy.
+
+
+MAN OF THE MATCH
+----------------
+- Onder Spelen > Man of the Match.
+- Zodra de uitslag van Wijnandia 1 bekend is, kunnen leden stemmen op de beste
+  speler, tot 3 dagen na de wedstrijd. Eén stem per telefoon, niet te wijzigen.
+- De stand zie je nadat je gestemd hebt; na het sluiten ziet iedereen de winnaar.
+- Het seizoensklassement telt het aantal keer Man of the Match (👑) en alle stemmen.
+- De pushmelding bij een nieuwe uitslag van Wijnandia 1 nodigt uit om te stemmen.
+- De SELECTIE vult het bestuur in op de beheerpagina (tabblad Selectie, één naam
+  per regel). Zonder selectie kan er niet gestemd worden.
+
+
+QUIZKLASSEMENT
+--------------
+- Bij de eerste weekvraag vult een lid een naam in; daarna speelt hij altijd onder
+  die naam (een naam kan maar door één telefoon gebruikt worden).
+- Per week één antwoord; de server controleert of het goed is. 1 punt per goed antwoord.
+- Het klassement staat onder Spelen > Weekquiz en telt alle weken bij elkaar op.
+- Startdatum aanpassen? Pas QUIZ_START aan in public/index.html EN zet dezelfde
+  waarde als QUIZ_START in Netlify (bv. 2026-10-04T06:00).
+- Let op: de antwoorden staan ook in public/quiz/vragen.json. Wie technisch handig
+  is, kan ze daar opzoeken. Voor een clubquiz is dat meestal geen probleem.
+
+
+ROUTE NAAR UITWEDSTRIJDEN
+-------------------------
+- Bij elke uitwedstrijd in het programma staat een knop "Route naar ...". Die opent
+  Google Maps met een route naar het sportpark van de tegenstander.
+- De app zoekt automatisch op "<clubnaam> voetbalvereniging sportpark". Komt dat
+  ergens niet goed uit, zet dan het juiste adres in public/index.html bij SPORTPARKEN:
+      "VV Bergdal": "Sportpark De Berg, Bergweg 1, Bergdal",

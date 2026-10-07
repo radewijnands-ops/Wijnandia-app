@@ -1,0 +1,17 @@
+{
+  "name": "R.K.V.V. Wijnandia",
+  "short_name": "Wijnandia",
+  "description": "Uitslagen, stand en activiteiten van voetbalvereniging Wijnandia uit Wijnandsrade",
+  "lang": "nl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f5fa",
+  "theme_color": "#295cab",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

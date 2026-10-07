@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Wijnandia Beheer</title>
+<link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --club-primair:#295cab; --club-donker:#1c3f78; --club-accent:#9dbbea;
+  --bg:#f2f5fa; --kaart:#fff; --tekst:#172238; --tekst-zacht:#56627a; --rand:#dde4ef; --rood:#b42318; --groen:#16743a;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tekst)}
+header{background:#fff;border-bottom:5px solid var(--club-primair);padding:calc(12px + env(safe-area-inset-top)) 16px 12px}
+header .binnen{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:14px}
+header img{height:48px}
+header h1{font:800 22px "Barlow Condensed","Arial Narrow",sans-serif;text-transform:uppercase;color:var(--club-donker);margin:0;letter-spacing:.3px}
+header .uit{margin-left:auto;border:0;background:#eef2f8;color:var(--club-donker);font:600 13px Inter,sans-serif;padding:8px 14px;border-radius:99px;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h2{font:800 24px "Barlow Condensed","Arial Narrow",sans-serif;text-transform:uppercase;margin:0 0 6px;letter-spacing:.3px}
+.sub{color:var(--tekst-zacht);font-size:14px;margin:0 0 16px;line-height:1.5}
+.kaart{background:var(--kaart);border:1px solid var(--rand);border-radius:16px;padding:18px;display:grid;gap:12px}
+label{display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--tekst-zacht)}
+input[type=text],input[type=password],input[type=url],textarea{font:500 16px Inter,sans-serif;padding:12px;border:1.5px solid var(--rand);border-radius:10px;background:#fff;color:var(--tekst);width:100%}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+input:focus,textarea:focus{outline:2px solid var(--club-primair);outline-offset:1px}
+.vink{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;color:var(--tekst)}
+.vink input{width:20px;height:20px;accent-color:var(--club-primair)}
+.knop{appearance:none;border:0;cursor:pointer;font:600 15px Inter,sans-serif;border-radius:10px;padding:12px 18px;min-height:46px;background:var(--club-primair);color:#fff}
+.knop.licht{background:transparent;color:var(--club-primair);border:1.5px solid var(--club-primair)}
+.knop.gevaar{background:transparent;color:var(--rood);border:1.5px solid #f1c4bf;min-height:36px;padding:6px 12px;font-size:13px}
+.knop:disabled{opacity:.5;cursor:default}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:#e3e9f3;border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
+.tabs button{border:0;background:transparent;font:600 14px Inter,sans-serif;color:var(--tekst-zacht);padding:10px 0;border-radius:9px;cursor:pointer}
+.tabs button.actief{background:#fff;color:var(--club-donker);box-shadow:0 1px 3px rgba(23,34,56,.12)}
+.melding{font-size:14px;border-radius:10px;padding:10px 12px;line-height:1.5}
+.melding.ok{background:#e7f4ec;color:var(--groen)}
+.melding.fout{background:#fdecec;color:var(--rood)}
+.lijst{display:grid;gap:10px;margin-top:22px}
+.bericht{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px;display:grid;gap:6px}
+.bericht .kop{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.bericht h3{margin:0;font-size:16px}
+.bericht .datum{font-size:12px;color:var(--tekst-zacht)}
+.bericht p{margin:0;font-size:14px;line-height:1.5;color:var(--tekst-zacht);white-space:pre-line}
+.teller{font-size:12px;color:var(--tekst-zacht);text-align:right;margin-top:-6px}
+.login{max-width:420px;margin:40px auto}
+.test-blok{border:1px solid var(--rand);border-radius:12px;padding:12px 14px;display:grid;gap:4px}
+.test-blok.ok{border-color:#a8dbb9;background:#f3fbf6}.test-blok.nok{border-color:#f1c4bf;background:#fff7f6}
+.test-blok p{margin:0;font-size:14px;line-height:1.5}.test-blok .klein{font-size:12px;color:var(--tekst-zacht);word-break:break-word}
+.test-blok code{background:#eef2f8;padding:1px 6px;border-radius:6px}.rood{color:var(--rood)}
+#testUitslag{display:grid;gap:10px}
+</style>
+</head>
+<body>
+<header><div class="binnen">
+  <img src="logo.png" alt="R.K.V.V. Wijnandia">
+  <h1>Beheer</h1>
+  <button class="uit" id="uitloggen" hidden>Uitloggen</button>
+</div></header>
+
+<main>
+  <!-- Inloggen -->
+  <form class="kaart login" id="loginForm">
+    <h2>Inloggen</h2>
+    <p class="sub" style="margin:0">Alleen voor het bestuur. Hier plaats je clubnieuws en vul je de selectie voor Man of the Match in.</p>
+    <label for="ww">Wachtwoord<input id="ww" type="password" autocomplete="current-password" required></label>
+    <p class="melding fout" id="loginFout" hidden></p>
+    <button class="knop" type="submit">Inloggen</button>
+  </form>
+
+  <div id="beheer" hidden>
+    <div class="tabs" role="tablist">
+      <button class="actief" data-tab="nieuws" type="button">Clubnieuws</button>
+      <button data-tab="selectie" type="button">Selectie MotM</button>
+      <button data-tab="koppeling" type="button">Koppeling</button>
+    </div>
+
+    <!-- Clubnieuws -->
+    <section id="tab-nieuws">
+      <h2>Nieuw bericht</h2>
+      <p class="sub">Het bericht verschijnt direct in de app onder Nieuws.</p>
+      <form class="kaart" id="nieuwsForm">
+        <label for="titel">Titel<input id="titel" type="text" maxlength="80" required placeholder="Bijv. Training vanavond afgelast"></label>
+        <label for="tekst">Tekst<textarea id="tekst" maxlength="2000" placeholder="Het veld is afgekeurd door de gemeente. Donderdag trainen we weer zoals gewoonlijk."></textarea></label>
+        <div class="teller" id="teller">0 / 2000</div>
+        <label for="link">Link (optioneel)<input id="link" type="text" inputmode="url" autocapitalize="off" spellcheck="false" maxlength="300" placeholder="https://..."></label>
+        <label class="vink"><input type="checkbox" id="push" checked> Stuur ook een pushmelding naar leden met meldingen voor clubnieuws aan</label>
+        <p class="melding" id="nieuwsMelding" hidden></p>
+        <button class="knop" type="submit" id="plaats">Bericht plaatsen</button>
+      </form>
+      <h2 style="margin-top:28px">Geplaatste berichten</h2>
+      <div class="lijst" id="berichten"><p class="sub">Laden…</p></div>
+    </section>
+
+    <!-- Koppeling -->
+    <section id="tab-koppeling" hidden>
+      <h2>Koppeling HollandseVelden</h2>
+      <p class="sub">Test of de app de wedstrijdgegevens kan ophalen. De test vraagt de gegevens direct op bij HollandseVelden (zonder tussenopslag) en laat zien wat er terugkomt.</p>
+      <div class="kaart">
+        <button class="knop" type="button" id="testKnop">Koppeling testen</button>
+        <div id="testUitslag"></div>
+      </div>
+    </section>
+
+    <!-- Selectie -->
+    <section id="tab-selectie" hidden>
+      <h2>Selectie Wijnandia 1</h2>
+      <p class="sub">Leden kunnen na elke wedstrijd stemmen op een van deze spelers. Zet één naam per regel. Pas de lijst aan bij blessures of wisselingen; stemmen die al zijn uitgebracht blijven gewoon staan.</p>
+      <form class="kaart" id="selectieForm">
+        <label for="spelers">Spelers (één per regel)<textarea id="spelers" style="min-height:320px" placeholder="Tom Janssen&#10;Luuk Hermans&#10;Bas Vroemen"></textarea></label>
+        <div class="teller" id="aantal">0 spelers</div>
+        <p class="melding" id="selectieMelding" hidden></p>
+        <button class="knop" type="submit">Selectie opslaan</button>
+      </form>
+    </section>
+  </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+let wachtwoord="";
+try{wachtwoord=sessionStorage.getItem("beheer")||""}catch(e){}
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function api(pad,opties={}){
+  return fetch("/api/beheer/"+pad,{...opties,headers:{"Content-Type":"application/json","X-Beheer":wachtwoord,...(opties.headers||{})}});
+}
+function toon(el,tekst,soort){el.hidden=false;el.textContent=tekst;el.className="melding "+soort;}
+
+async function inloggen(ww){
+  wachtwoord=ww;
+  const r=await api("inloggen",{method:"POST",body:"{}"}).catch(()=>null);
+  if(r&&r.ok){ try{sessionStorage.setItem("beheer",ww)}catch(e){}
+    $("loginForm").hidden=true; $("beheer").hidden=false; $("uitloggen").hidden=false;
+    laadBerichten(); laadSelectie(); return true; }
+  const d=r?await r.json().catch(()=>({})):{};
+  toon($("loginFout"), r?(d.fout||"Inloggen lukte niet."):"Geen verbinding met de server.","fout");
+  wachtwoord=""; return false;
+}
+$("loginForm").onsubmit=e=>{e.preventDefault(); $("loginFout").hidden=true; inloggen($("ww").value);};
+$("uitloggen").onclick=()=>{try{sessionStorage.removeItem("beheer")}catch(e){} location.reload();};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("actief",x===b));
+  ["nieuws","selectie","koppeling"].forEach(t=>$("tab-"+t).hidden=b.dataset.tab!==t);
+});
+
+/* ---------- Nieuws ---------- */
+$("tekst").oninput=()=>$("teller").textContent=$("tekst").value.length+" / 2000";
+async function laadBerichten(){
+  const r=await fetch("/api/nieuws",{cache:"no-store"}).catch(()=>null);
+  const lijst=r&&r.ok?(await r.json()).berichten:[];
+  $("berichten").innerHTML=lijst.length?lijst.map(b=>{
+    const d=new Date(b.t);
+    return `<div class="bericht"><div class="kop"><div><h3>${esc(b.titel)}</h3>
+      <div class="datum">${d.toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})} · ${d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}</div></div>
+      <button class="knop gevaar" data-id="${esc(b.id)}" type="button">Verwijderen</button></div>
+      ${b.tekst?`<p>${esc(b.tekst)}</p>`:""}${b.link?`<p>🔗 ${esc(b.link)}</p>`:""}</div>`;}).join("")
+    :`<p class="sub">Nog geen berichten geplaatst.</p>`;
+  $("berichten").querySelectorAll("[data-id]").forEach(k=>k.onclick=async()=>{
+    if(k.dataset.bevestig!=="1"){ k.dataset.bevestig="1"; k.textContent="Zeker weten?"; setTimeout(()=>{k.dataset.bevestig="";k.textContent="Verwijderen";},4000); return; }
+    k.disabled=true;
+    const r=await api("nieuws?id="+encodeURIComponent(k.dataset.id),{method:"DELETE"}).catch(()=>null);
+    if(r&&r.ok) laadBerichten(); else { k.disabled=false; k.textContent="Mislukt, opnieuw"; }
+  });
+}
+$("nieuwsForm").onsubmit=async e=>{
+  e.preventDefault();
+  const knop=$("plaats"), m=$("nieuwsMelding"); m.hidden=true;
+  if($("titel").value.trim().length<3){ toon(m,"Vul een titel in van minimaal 3 tekens.","fout"); $("titel").focus(); return; }
+  knop.disabled=true; knop.textContent="Bezig met plaatsen…";
+  try{
+    const r=await api("nieuws",{method:"POST",body:JSON.stringify({titel:$("titel").value,tekst:$("tekst").value,link:$("link").value,push:$("push").checked})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ toon(m,d.fout||"Plaatsen lukte niet.","fout"); return; }
+    toon(m, "Geplaatst." + (d.push?` Pushmelding verstuurd naar ${d.push.verstuurd} telefoon${d.push.verstuurd===1?"":"s"}.`:""),"ok");
+    $("nieuwsForm").reset(); $("push").checked=true; $("teller").textContent="0 / 2000";
+    laadBerichten();
+  }catch(err){ toon(m,"Geen verbinding met de server. Probeer het opnieuw.","fout"); }
+  finally{ knop.disabled=false; knop.textContent="Bericht plaatsen"; }
+};
+
+/* ---------- Selectie ---------- */
+const telSpelers=()=>{const n=$("spelers").value.split("\n").map(x=>x.trim()).filter(x=>x.length>=2).length;$("aantal").textContent=n+" speler"+(n===1?"":"s");};
+$("spelers").oninput=telSpelers;
+async function laadSelectie(){
+  const r=await api("spelers").catch(()=>null);
+  if(r&&r.ok){ const d=await r.json(); $("spelers").value=(d.spelers||[]).join("\n"); telSpelers(); }
+}
+$("selectieForm").onsubmit=async e=>{
+  e.preventDefault(); const m=$("selectieMelding");
+  const spelers=$("spelers").value.split("\n");
+  const r=await api("spelers",{method:"PUT",body:JSON.stringify({spelers})}).catch(()=>null);
+  const d=r?await r.json().catch(()=>({})):{};
+  if(r&&r.ok){ $("spelers").value=d.spelers.join("\n"); telSpelers(); toon(m,`Opgeslagen: ${d.spelers.length} spelers.`,"ok"); }
+  else toon(m,d.fout||"Opslaan lukte niet.","fout");
+};
+
+/* ---------- Koppeling testen ---------- */
+const UITLEG={
+  401:"Geen toegang. De sleutel is onjuist, nog niet geactiveerd, of heeft geen recht op dit adres.",
+  403:"Geen toegang tot dit adres met deze sleutel.",
+  404:"Onbekend adres: club of team niet gevonden.",
+  503:"De API-sleutel is niet ingesteld (HV_API_KEY).",
+  502:"HollandseVelden was niet bereikbaar."
+};
+$("testKnop").onclick=async()=>{
+  const k=$("testKnop"), u=$("testUitslag"); k.disabled=true; k.textContent="Bezig met testen…"; u.innerHTML="";
+  try{
+    const r=await api("test",{method:"POST",body:"{}"}); const d=await r.json();
+    if(!r.ok){ u.innerHTML=`<p class="melding fout">${esc(d.fout||"Test mislukt.")}</p>`; return; }
+    const sl=d.sleutel;
+    let h=`<div class="test-blok"><b>API-sleutel</b><p>${sl.ingesteld?`Ingesteld · ${sl.lengte} tekens · begint met <code>${esc(sl.begin)}</code>`:"<span class='rood'>Niet ingesteld</span>"}</p>
+      ${sl.opgeschoond?`<p class="klein">Er stonden spaties, enters of aanhalingstekens rond de sleutel; die worden nu automatisch weggehaald.</p>`:""}</div>`;
+    for(const x of d.resultaten){
+      h+=`<div class="test-blok ${x.ok?"ok":"nok"}"><b>${x.ok?"✅":"❌"} ${esc(x.pad)}</b>
+        <p>HTTP ${x.status}${x.ok?"":" · "+esc(UITLEG[x.status]||"Onverwachte fout.")}</p>
+        ${x.samenvatting?`<p class="klein">${esc(x.samenvatting)}</p>`:""}</div>`;
+    }
+    const [club,team]=d.resultaten;
+    h+=`<p class="melding ${team.ok?"ok":"fout"}">${
+      club.ok&&team.ok?"Alles werkt. De app toont alle Wijnandia-teams. Herlaad de app om de wedstrijden te zien."
+      :team.ok?"De app werkt voor Wijnandia 1. Voor alle teams moet HollandseVelden toegang geven tot "+esc(d.clubPad)+". Herlaad de app om de wedstrijden te zien."
+      :"De app kan nog geen wedstrijden ophalen. Controleer de sleutel in Netlify (zonder spaties) en vraag HollandseVelden of de sleutel actief is en toegang heeft tot "+esc(d.clubPad)+"."}</p>`;
+    u.innerHTML=h;
+  }catch(e){ u.innerHTML=`<p class="melding fout">Geen verbinding met de server.</p>`; }
+  finally{ k.disabled=false; k.textContent="Koppeling testen"; }
+};
+
+if(wachtwoord) inloggen(wachtwoord); else $("ww").focus();
+</script>
+</body>
+</html>

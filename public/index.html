@@ -1,0 +1,1435 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wijnandia</title>
+<meta name="theme-color" content="#295cab">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wijnandia">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   1. HUISKLEUREN — pas deze waarden aan naar de clubkleuren
+   ============================================================ */
+:root{
+  --club-primair:   #295cab;   /* hoofdkleur (header, knoppen) */
+  --club-secundair: #ffffff;   /* tweede kleur (tekst op hoofdkleur) */
+  --club-accent:    #9dbbea;   /* accent (datum-blokjes, actieve tab) */
+
+  --club-donker:    #1c3f78;   /* donkerblauw voor tekst en hover */
+  --bg: #f2f5fa;
+  --kaart: #ffffff;
+  --tekst: #172238;
+  --tekst-zacht: #56627a;
+  --rand: #dde4ef;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tekst);
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));
+}
+/* Header */
+header{
+  background:#fff;color:var(--club-donker);
+  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+  border-bottom:5px solid var(--club-primair);
+  box-shadow:0 2px 10px rgba(23,34,56,.06);
+}
+.kop{display:flex;align-items:center;gap:14px;position:relative;z-index:1;max-width:900px;margin:0 auto}
+.logo{display:block;height:56px;width:auto;max-width:62vw}
+.verborgen{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+main{max-width:900px;margin:0 auto;padding:16px}
+section{display:none}
+section.actief{display:block}
+h2{font-family:"Barlow Condensed";font-weight:800;text-transform:uppercase;font-size:24px;margin:6px 0 4px;letter-spacing:.3px}
+.sub{color:var(--tekst-zacht);font-size:14px;margin:0 0 14px}
+
+/* Uitslagen */
+.embed-kaart{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;overflow:hidden}
+.embed-kaart iframe{display:block;width:100%;height:2200px;border:0}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  background:#e7f4ec;color:#16743a;padding:4px 10px;border-radius:99px}
+.acties{align-items:center}
+.knop.klein{min-height:32px;padding:6px 12px;font-size:12px}
+#installeer{background:var(--club-primair);color:#fff;
+  border:0;border-radius:99px;font:600 13px Inter,sans-serif;padding:8px 14px;cursor:pointer}
+.ios-tip{background:var(--kaart);border:1px solid var(--rand);border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:#1fa34a;animation:puls 1.6s infinite}
+@keyframes puls{50%{opacity:.3}}
+.bron{font-size:12px;color:var(--tekst-zacht);margin-top:10px}
+.bron a{color:inherit}
+
+/* Activiteiten */
+.acties{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.lijst{display:grid;gap:12px}
+.act{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px;
+  display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start}
+.datum{background:var(--club-primair);color:var(--club-secundair);border-radius:10px;text-align:center;padding:8px 0;
+  border-bottom:4px solid var(--club-accent)}
+.datum .d{font-family:"Barlow Condensed";font-weight:800;font-size:28px;line-height:1}
+.datum .m{font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.act h3{margin:0 0 4px;font-size:17px}
+.meta{font-size:13px;color:var(--tekst-zacht);display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:6px}
+.omschr{font-size:14px;margin:0 0 10px;line-height:1.45}
+.knoppen{display:flex;gap:8px;flex-wrap:wrap}
+.knop{appearance:none;border:0;cursor:pointer;font:600 14px Inter,sans-serif;border-radius:10px;
+  padding:10px 14px;display:inline-flex;align-items:center;gap:7px;text-decoration:none;min-height:42px}
+.knop.hoofd{background:var(--club-primair);color:var(--club-secundair)}
+.knop.licht{background:transparent;color:var(--club-primair);border:1.5px solid var(--club-primair)}
+.knop:active{transform:scale(.97)}
+.knop:disabled{opacity:.45;cursor:default;transform:none}
+.leeg{text-align:center;color:var(--tekst-zacht);padding:30px 10px;background:var(--kaart);border-radius:14px;border:1px dashed var(--rand)}
+.verlopen{opacity:.55}
+.verlopen .datum{background:var(--tekst-zacht);border-bottom-color:var(--rand)}
+.tussenkop{margin:14px 0 0;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--tekst-zacht)}
+
+/* Onderbalk-navigatie */
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--kaart);border-top:1px solid var(--rand);
+  display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav button{flex:1;max-width:220px;background:none;border:0;padding:10px 0 9px;cursor:pointer;
+  font:600 12px Inter,sans-serif;color:var(--tekst-zacht);display:flex;flex-direction:column;align-items:center;gap:3px;
+  border-top:3px solid transparent}
+nav button svg{width:24px;height:24px}
+nav button.actief{color:var(--club-primair);border-top-color:var(--club-accent)}
+
+@media (min-width:700px){ .act{grid-template-columns:76px 1fr} }
+
+/* ---------- Opstartanimatie ---------- */
+#splash{position:fixed;inset:0;z-index:100;background:#fff;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:28px;padding:24px;text-align:center;
+  transition:opacity .5s ease, transform .5s ease}
+#splash.weg{opacity:0;transform:scale(1.04);pointer-events:none}
+#splash::before{content:"";position:absolute;inset:auto 0 0 0;height:38%;
+  background:linear-gradient(to top, rgba(41,92,171,.12), transparent)}
+#splash img{width:min(78vw,420px);height:auto;transform:scale(.2);opacity:0;
+  animation:logoIn 1.1s cubic-bezier(.2,1.4,.4,1) .15s forwards}
+@keyframes logoIn{0%{transform:scale(.2) rotate(-8deg);opacity:0}
+  60%{opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+.yell{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:800;text-transform:uppercase;
+  color:var(--club-primair);font-size:clamp(22px,6.4vw,34px);line-height:1.15;letter-spacing:.5px;
+  display:flex;flex-wrap:wrap;justify-content:center;gap:0 .32em;max-width:420px;position:relative}
+.yell span{opacity:0;transform:translateY(14px) scale(.8);display:inline-block;
+  animation:woord .35s cubic-bezier(.2,1.6,.4,1) forwards}
+.yell .groot{font-size:1.35em;color:var(--club-donker);flex-basis:100%;margin-top:4px}
+@keyframes woord{to{opacity:1;transform:none}}
+.yell .hoera{color:var(--club-donker)}
+.tik{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom));font-size:12px;color:var(--tekst-zacht);
+  opacity:0;animation:woord .4s 2.6s forwards}
+@media (prefers-reduced-motion:reduce){
+  #splash img,.yell span,.tik{animation:none;opacity:1;transform:none}
+}
+
+/* ---------- Wedstrijden (HollandseVelden API) ---------- */
+.teams{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}
+.teams::-webkit-scrollbar{display:none}
+.teams button{flex:none;border:1.5px solid var(--rand);background:var(--kaart);color:var(--tekst);
+  font:600 13px Inter,sans-serif;border-radius:99px;padding:7px 14px;cursor:pointer;white-space:nowrap}
+.teams button.actief{background:var(--club-primair);border-color:var(--club-primair);color:#fff}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:#e3e9f3;border-radius:12px;padding:4px;gap:4px;margin-bottom:10px}
+.seg button{border:0;background:transparent;font:600 14px Inter,sans-serif;color:var(--tekst-zacht);padding:9px 0;border-radius:9px;cursor:pointer}
+.seg button.actief{background:var(--kaart);color:var(--club-donker);box-shadow:0 1px 3px rgba(23,34,56,.12)}
+.filter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tekst-zacht);margin:0 0 10px;cursor:pointer}
+.filter input{accent-color:var(--club-primair);width:17px;height:17px}
+.hv-inhoud{display:grid;gap:8px}
+.laden,.melding{background:var(--kaart);border:1px dashed var(--rand);border-radius:14px;padding:22px 14px;text-align:center;color:var(--tekst-zacht);font-size:14px}
+.dagkop{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--tekst-zacht);margin:8px 2px 0}
+.wed{background:var(--kaart);border:1px solid var(--rand);border-radius:12px;padding:10px 12px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.wed .ploeg{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px}
+.wed .ploeg span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wed .uit{flex-direction:row-reverse;text-align:right}
+.wed img{width:22px;height:22px;flex:none}
+.wed .mid{text-align:center;min-width:64px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.wed .score{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:800;font-size:22px;color:var(--club-donker);font-variant-numeric:tabular-nums}
+.wed .tijd{font-weight:600;font-size:15px;color:var(--club-donker);font-variant-numeric:tabular-nums}
+.wed .klein{display:block;font-size:11px;color:var(--tekst-zacht)}
+.wed.ons{border-color:var(--club-accent);box-shadow:inset 3px 0 0 var(--club-primair)}
+.ons-naam{font-weight:700;color:var(--club-donker)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:#fdecec;color:#b42318;margin-top:2px}
+.stand-wrap{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;overflow-x:auto}
+table.stand{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.stand th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--tekst-zacht);font-weight:600;padding:9px 6px;text-align:center;border-bottom:1px solid var(--rand)}
+.stand td{padding:9px 6px;text-align:center;border-bottom:1px solid var(--rand)}
+.stand tr:last-child td{border-bottom:0}
+.stand .t{text-align:left;white-space:nowrap}
+.stand .t img{width:18px;height:18px;vertical-align:-4px;margin-right:6px}
+.stand .p{font-weight:700;color:var(--club-donker)}
+.stand tr.ons td{background:#eaf1fb;font-weight:700;color:var(--club-donker)}
+.voet{margin:28px 0 8px;font-size:12px;color:var(--tekst-zacht);text-align:center;line-height:1.7}
+.voet a{color:inherit}
+
+/* ---------- Weekquiz ---------- */
+#quizKnop{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:20;
+  display:flex;align-items:center;gap:0;border:0;padding:0;background:none;cursor:pointer}
+#quizKnop .bol{position:relative;width:58px;height:58px;border-radius:50%;background:var(--club-primair);color:#fff;
+  display:grid;place-items:center;box-shadow:0 6px 18px rgba(28,63,120,.35);
+  font:800 30px/1 "Barlow Condensed","Arial Narrow",sans-serif;animation:stuiter 4s ease-in-out 1.2s infinite}
+#quizKnop .bol::before{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid var(--club-primair);
+  animation:ring 2s ease-out infinite;opacity:0}
+#quizKnop.gedaan .bol::before{display:none}
+#quizKnop .label{background:#fff;color:var(--club-donker);font:700 13px Inter,sans-serif;padding:8px 14px 8px 12px;
+  border-radius:99px 0 0 99px;margin-right:-10px;box-shadow:0 4px 14px rgba(28,63,120,.18);white-space:nowrap;
+  max-width:0;overflow:hidden;padding-left:0;padding-right:0;transition:max-width .5s ease,padding .5s ease}
+#quizKnop.open-label .label{max-width:160px;padding:8px 18px 8px 14px}
+#quizKnop .stip{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#e5484d;border:2.5px solid #fff}
+#quizKnop.gedaan .stip{display:none}
+@keyframes stuiter{0%,70%,100%{transform:translateY(0) rotate(0)}76%{transform:translateY(-12px) rotate(-10deg)}
+  82%{transform:translateY(0) rotate(6deg)}88%{transform:translateY(-5px) rotate(-3deg)}94%{transform:translateY(0) rotate(0)}}
+@keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+
+#quiz{position:fixed;inset:0;z-index:60;background:rgba(15,25,45,.55);display:flex;align-items:flex-end;justify-content:center;
+  animation:vervaag .25s ease}
+#quiz .vel{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;
+  padding:18px 16px calc(24px + env(safe-area-inset-bottom));animation:omhoog .35s cubic-bezier(.2,1,.3,1)}
+@media (min-width:640px){#quiz{align-items:center}#quiz .vel{border-radius:22px}}
+@keyframes vervaag{from{opacity:0}}
+@keyframes omhoog{from{transform:translateY(40px);opacity:.4}}
+.qkop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.qkop .wk{font:800 13px/1 Inter,sans-serif;text-transform:uppercase;letter-spacing:1px;color:var(--club-primair)}
+.qkop .cat{font-size:12px;font-weight:600;background:#e3ebf8;color:var(--club-donker);padding:4px 10px;border-radius:99px}
+.qkop .sluit{margin-left:auto;width:36px;height:36px;border-radius:50%;border:0;background:#e3e9f3;color:var(--tekst);font-size:20px;cursor:pointer}
+.qvraag{font:700 19px/1.35 Inter,sans-serif;margin:0 0 14px;text-wrap:balance}
+.qfoto{display:block;width:100%;max-height:300px;object-fit:contain;background:#fff;border-radius:12px;border:1px solid var(--rand);margin-bottom:14px}
+.qant{display:grid;gap:8px}
+.qant button{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:1.5px solid var(--rand);background:var(--kaart);
+  border-radius:12px;padding:12px;font:500 15px Inter,sans-serif;color:var(--tekst);cursor:pointer;transition:transform .1s}
+.qant button:active{transform:scale(.98)}
+.qant .lt{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#e3ebf8;color:var(--club-donker);font-weight:800}
+.qant button.goed{border-color:#1fa34a;background:#e9f7ee}
+.qant button.goed .lt{background:#1fa34a;color:#fff}
+.qant button.fout{border-color:#e5484d;background:#fdecec}
+.qant button.fout .lt{background:#e5484d;color:#fff}
+.qant button:disabled{cursor:default}
+.quitleg{margin-top:14px;background:var(--kaart);border:1px solid var(--rand);border-radius:12px;padding:14px;font-size:14px;line-height:1.5;animation:omhoog .3s ease}
+.quitleg b{display:block;font-size:16px;margin-bottom:4px}
+.quitleg .qbron{display:block;margin-top:8px;font-size:12px;color:var(--tekst-zacht)}
+.qvolgende{margin-top:14px;font-size:13px;color:var(--tekst-zacht);text-align:center}
+@media (prefers-reduced-motion:reduce){#quizKnop .bol,#quizKnop .bol::before,#quiz,#quiz .vel,.quitleg{animation:none}}
+
+/* ---------- Meldingen ---------- */
+.melding-kaart{display:flex;align-items:center;gap:12px;background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.melding-kaart .bel{font-size:22px}
+.mk-tekst{flex:1;min-width:0;font-size:13px;color:var(--tekst-zacht);line-height:1.4}
+.mk-tekst b{display:block;color:var(--tekst);font-size:14px}
+.schakel{flex:none;width:50px;height:30px;border-radius:99px;border:0;background:#c9d3e3;position:relative;cursor:pointer;transition:background .2s}
+.schakel span{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.schakel[aria-checked="true"]{background:var(--club-primair)}
+.schakel[aria-checked="true"] span{transform:translateX(20px)}
+.schakel:disabled{opacity:.5}
+
+/* ---------- Voorspellen ---------- */
+.vs-wedstrijd .vs-kaart{background:var(--club-primair);color:#fff;border-radius:16px;padding:16px;text-align:center;position:relative;overflow:hidden}
+.vs-kaart::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08)}
+.vs-kaart .wanneer{font-size:13px;opacity:.85;margin-bottom:10px}
+.vs-kaart .tegen{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.vs-kaart .tegen span{min-width:0;overflow-wrap:anywhere}
+.vs-kaart .vs{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:800;font-size:28px;opacity:.9}
+.vs-kaart .sluit-info{margin-top:12px;display:inline-block;font-size:12px;font-weight:600;background:rgba(255,255,255,.16);padding:5px 12px;border-radius:99px}
+.vs-form{background:var(--kaart);border:1px solid var(--rand);border-radius:16px;padding:16px;margin-top:12px;display:grid;gap:10px}
+.vs-label{font-size:13px;font-weight:600;color:var(--tekst-zacht)}
+#vsNaam{font:500 16px Inter,sans-serif;padding:12px;border:1.5px solid var(--rand);border-radius:10px;width:100%;background:#fff;color:var(--tekst)}
+#vsNaam:focus{outline:2px solid var(--club-primair);outline-offset:1px}
+.vs-score{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:8px;margin-top:6px}
+.vs-ploeg{display:grid;gap:6px;justify-items:center;text-align:center;font-size:13px;font-weight:600;min-width:0}
+.vs-ploeg>span{overflow-wrap:anywhere}
+.vs-streep{font:800 28px "Barlow Condensed","Arial Narrow",sans-serif;padding-bottom:8px;color:var(--tekst-zacht)}
+.stepper{display:flex;align-items:center;border:1.5px solid var(--rand);border-radius:12px;overflow:hidden}
+.stepper button{width:40px;height:48px;border:0;background:#eef2f8;font-size:22px;color:var(--club-donker);cursor:pointer}
+.stepper output{width:44px;text-align:center;font:800 28px "Barlow Condensed","Arial Narrow",sans-serif;color:var(--club-donker);font-variant-numeric:tabular-nums}
+.knop.breed{width:100%;justify-content:center}
+.vs-fout{margin:0;color:#b42318;font-size:13px;min-height:0}
+.vs-fout:empty{display:none}
+.vs-bevestig{background:#fff7e6;border:1px solid #f5d48a;border-radius:12px;padding:12px;font-size:14px}
+.vs-bevestig p{margin:0 0 10px}
+.vs-mijn{margin-top:12px;background:#eaf1fb;border:1px solid var(--club-accent);border-radius:14px;padding:14px;font-size:14px;line-height:1.5}
+.vs-mijn .groot{font:800 26px "Barlow Condensed","Arial Narrow",sans-serif;color:var(--club-donker)}
+.vs-kop{font:800 20px "Barlow Condensed","Arial Narrow",sans-serif;text-transform:uppercase;margin:22px 0 8px;letter-spacing:.3px;display:flex;align-items:baseline;gap:8px}
+.vs-kop span{font:500 12px Inter,sans-serif;text-transform:none;color:var(--tekst-zacht);letter-spacing:0}
+.vs-bord{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;overflow:hidden}
+.vs-rij{display:grid;grid-template-columns:34px 1fr auto auto;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--rand);font-size:14px}
+.vs-rij:last-child{border-bottom:0}
+.vs-rij .pos{font:800 18px "Barlow Condensed","Arial Narrow",sans-serif;color:var(--tekst-zacht);text-align:center;font-variant-numeric:tabular-nums}
+.vs-bord.uitslag .vs-rij:nth-child(1) .pos{color:#c49a00}.vs-bord.uitslag .vs-rij:nth-child(2) .pos{color:#8a94a6}.vs-bord.uitslag .vs-rij:nth-child(3) .pos{color:#a8693b}
+.vs-rij .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.vs-rij .vp{font-variant-numeric:tabular-nums;color:var(--tekst-zacht)}
+.vs-rij .pt{font:800 16px Inter,sans-serif;color:var(--club-donker);min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+.vs-rij.ik{background:#eaf1fb}
+.vs-leeg{padding:22px 14px;text-align:center;color:var(--tekst-zacht);font-size:14px}
+.vs-regels{font-size:12px;color:var(--tekst-zacht);line-height:1.5;margin-top:10px}
+
+/* ---------- Info ---------- */
+.kop-rechts{margin-left:auto;display:flex;align-items:center;gap:8px}
+#infoKnop{width:40px;height:40px;border-radius:50%;border:0;background:#eef2f8;color:var(--club-primair);display:grid;place-items:center;cursor:pointer;flex:none}
+#infoKnop svg{width:24px;height:24px}
+#infoKnop.actief{background:var(--club-primair);color:#fff}
+.terug{border:0;background:none;color:var(--club-primair);font:600 15px Inter,sans-serif;padding:4px 0;margin-bottom:8px;cursor:pointer}
+.info-kop{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.info-kop img{border-radius:16px;border:1px solid var(--rand);flex:none}
+.info-kop h2{margin:0}
+.info-kop .sub{margin:2px 0 0}
+.info-lijst{margin:0;background:var(--kaart);border:1px solid var(--rand);border-radius:14px;overflow:hidden}
+.info-lijst div{display:flex;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--rand);font-size:15px}
+.info-lijst div:last-child{border-bottom:0}
+.info-lijst dt{color:var(--tekst-zacht)}
+.info-lijst dd{margin:0;font-weight:600;text-align:right}
+.info-tussenkop{font:800 18px "Barlow Condensed","Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.3px;margin:22px 0 4px}
+.info-tekst{margin:0 0 8px;font-size:14px;color:var(--tekst-zacht)}
+.info-links{list-style:none;margin:0;padding:0;background:var(--kaart);border:1px solid var(--rand);border-radius:14px;overflow:hidden}
+.info-links li{border-bottom:1px solid var(--rand)}
+.info-links li:last-child{border-bottom:0}
+.info-links a{display:flex;justify-content:space-between;padding:13px 16px;color:var(--club-donker);font-weight:600;text-decoration:none;font-size:15px}
+.info-links a::after{content:"↗";color:var(--tekst-zacht)}
+main:has(#info.actief) .voet{display:none}
+.info-klein{font-size:12px;color:var(--tekst-zacht);margin-top:10px;line-height:1.5}
+
+/* ---------- Route ---------- */
+.wed .route{grid-column:1/-1;justify-self:start;margin-top:2px;font:600 13px Inter,sans-serif;color:var(--club-primair);text-decoration:none;
+  background:#eaf1fb;padding:6px 12px;border-radius:99px}
+.wed .route:active{transform:scale(.97)}
+
+/* ---------- Navigatie: stip bij nieuw nieuws ---------- */
+nav button{position:relative}
+nav button.nieuw::after{content:"";position:absolute;top:7px;left:calc(50% + 7px);width:10px;height:10px;border-radius:50%;background:#e5484d;border:2px solid var(--kaart)}
+
+/* ---------- Clubnieuws ---------- */
+.nieuws-lijst{display:grid;gap:12px}
+.nieuws-kaart{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:16px;display:grid;gap:8px;justify-items:start}
+.nieuws-kaart.ongelezen{border-color:var(--club-accent);box-shadow:inset 4px 0 0 var(--club-primair)}
+.nk-datum{font-size:12px;font-weight:600;color:var(--tekst-zacht);text-transform:uppercase;letter-spacing:.5px;display:flex;gap:8px;align-items:center}
+.nk-nieuw{background:var(--club-primair);color:#fff;border-radius:99px;padding:2px 8px;font-size:11px;letter-spacing:0}
+.nieuws-kaart h3{margin:0;font-size:18px;line-height:1.3;text-wrap:balance}
+.nieuws-kaart p{margin:0;font-size:15px;line-height:1.55;color:var(--tekst)}
+
+/* ---------- Spelen ---------- */
+.spel-seg button{font-size:13px;line-height:1.15;padding:9px 4px}
+.motm-stem{margin-top:12px}
+.motm-vraag{font-weight:700;margin:4px 0 10px}
+.spelers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.speler{border:1.5px solid var(--rand);background:var(--kaart);border-radius:12px;padding:12px 10px;font:600 14px Inter,sans-serif;color:var(--tekst);cursor:pointer;text-align:left;min-width:0;overflow-wrap:anywhere}
+.speler[aria-pressed="true"]{border-color:var(--club-primair);background:#eaf1fb;color:var(--club-donker);box-shadow:inset 0 0 0 1px var(--club-primair)}
+.motm-klein{font-size:12px;color:var(--tekst-zacht);margin:10px 0 0;line-height:1.5}
+.motm-uitslag{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px;display:grid;gap:12px}
+.motm-uitslag p{margin:0}
+.motm-winnaar{font-size:16px;background:#fff7e0;border-radius:10px;padding:10px 12px}
+.motm-mijn{font-size:14px;color:var(--tekst-zacht)}
+.balk-kop{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:5px}
+.balk-kop span:first-child{font-weight:600}
+.balk-kop span:last-child{color:var(--tekst-zacht);font-variant-numeric:tabular-nums;white-space:nowrap}
+.balk-baan{height:10px;background:#e3e9f3;border-radius:99px;overflow:hidden}
+.balk-baan div{height:100%;background:var(--club-accent);border-radius:99px}
+.balk.ik .balk-baan div{background:var(--club-primair)}
+.quiz-kaart{display:flex;align-items:center;gap:12px;background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px}
+.quiz-kaart>div{flex:1;min-width:0;display:grid;gap:2px;font-size:13px;color:var(--tekst-zacht)}
+.quiz-kaart b{font-size:15px;color:var(--tekst)}
+.quiz-pos{font-size:14px;margin:10px 2px 0;line-height:1.5}
+
+/* ---------- Quiz: naam ---------- */
+.qnaam{display:grid;gap:6px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--tekst-zacht)}
+.qnaam input{font:500 16px Inter,sans-serif;padding:12px;border:1.5px solid var(--rand);border-radius:10px;background:#fff;color:var(--tekst)}
+.qnaam input:focus{outline:2px solid var(--club-primair);outline-offset:1px}
+.qals{font-size:13px;color:var(--tekst-zacht);margin:-4px 0 12px}
+.qfout{color:#b42318;font-size:13px;margin:10px 0 0}
+.qfout:empty{display:none}
+.qbord-link{display:block;margin:14px auto 0;border:0;background:none;color:var(--club-primair);font:600 14px Inter,sans-serif;cursor:pointer}
+
+/* ---------- Wedstrijden: modern overzicht ---------- */
+.hv-overzicht{display:grid;gap:10px;margin-bottom:16px}
+.next-kaart{position:relative;overflow:hidden;color:#fff;border-radius:20px;padding:16px 16px 14px;
+  background:radial-gradient(120% 140% at 100% 0%,#3b74cc 0%,var(--club-primair) 45%,var(--club-donker) 100%);box-shadow:0 10px 24px rgba(28,63,120,.25)}
+.next-kaart::after{content:"";position:absolute;right:-50px;bottom:-60px;width:180px;height:180px;border-radius:50%;border:2px solid rgba(255,255,255,.1);pointer-events:none}
+.next-kaart::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.06);pointer-events:none}
+.next-kaart.leeg p{margin:8px 0 0;opacity:.85;font-size:14px}
+.nk-boven{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;position:relative;z-index:1}
+.nk-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;opacity:.85}
+.nk-chip{font-size:12px;font-weight:700;background:#fff;color:var(--club-donker);padding:4px 10px;border-radius:99px}
+.nk-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;position:relative;z-index:1}
+.nk-ploeg{display:grid;justify-items:center;gap:8px;text-align:center;font-weight:700;font-size:14px;line-height:1.25;min-width:0}
+.nk-ploeg>span:last-child{overflow-wrap:anywhere}
+.nk-ploeg .club-logo{width:56px;height:56px;font-size:18px}
+.nk-mid{display:grid;justify-items:center;gap:2px;padding-top:8px}
+.nk-tijd{font:800 34px/1 "Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.nk-dag{font-size:12px;color:rgba(255,255,255,.85);white-space:nowrap}
+.nk-acties{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center;position:relative;z-index:1}
+.knop-glas{appearance:none;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);color:#fff;font:600 13px Inter,sans-serif;
+  padding:8px 12px;border-radius:99px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.knop-glas:active{transform:scale(.97)}
+.knop-glas.stil{cursor:default;opacity:.8}
+.club-logo{flex:none;width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden;
+  font:800 11px Inter,sans-serif;color:var(--club-donker);box-shadow:0 0 0 1px var(--rand)}
+.club-logo img{width:78%;height:78%;object-fit:contain}
+.club-logo.ons img{width:92%;height:92%}
+.next-kaart .club-logo{box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.hv-tegels{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tegel{background:var(--kaart);border:1px solid var(--rand);border-radius:16px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.t-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tekst-zacht)}
+.t-groot{font:800 34px/1 "Barlow Condensed","Arial Narrow",sans-serif;color:var(--club-donker)}
+.t-klein{font-size:12px;color:var(--tekst-zacht)}
+.vorm{display:flex;gap:5px;margin:4px 0 2px}
+.vorm>span{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font:800 12px Inter,sans-serif;color:#fff}
+.vorm.mini{gap:3px;margin:3px 0 0}
+.vorm.mini>span{width:7px;height:7px;border-radius:50%}
+.v-W{background:#1fa34a}.v-G{background:#e8a317}.v-V{background:#e5484d}
+.laatste{display:flex;align-items:center;gap:12px;background:var(--kaart);border:1px solid var(--rand);border-radius:16px;padding:12px 14px}
+.l-badge{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;font:800 16px Inter,sans-serif}
+.l-tekst{display:grid;gap:2px;min-width:0}
+.l-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tekst-zacht)}
+.l-wed{font-size:14px;line-height:1.35}
+.l-wed b{font-variant-numeric:tabular-nums;white-space:nowrap;margin:0 2px}
+.wed .ploeg .club-logo{width:26px;height:26px;font-size:10px}
+.wed .score{display:inline-flex;align-items:center;gap:6px;background:var(--club-donker);color:#fff;border-radius:9px;padding:3px 10px;font-size:20px}
+.wed .score i{font-style:normal;opacity:.6;font-size:16px}
+.wed .score.v-W{background:#1fa34a}.wed .score.v-G{background:#e8a317}.wed .score.v-V{background:#e5484d}
+.wed .tijd{background:#eef2f8;border-radius:9px;padding:4px 10px;font-size:14px}
+.stand-wrap{border-radius:16px}
+.stand td,.stand th{padding:10px 5px}
+.stand .pos{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;font-weight:700;font-size:12px;color:var(--tekst-zacht)}
+.stand tr.eerste .pos{background:#fff1c7;color:#9a6b00}
+.stand .t-cel{display:flex;align-items:center;gap:8px;min-width:0}
+.stand .t-naam{display:grid;min-width:0}
+.stand .t-naam>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stand .t{max-width:170px}
+.stand tr.ons td{background:var(--club-primair);color:#fff;font-weight:700}
+.stand tr.ons .pos{background:rgba(255,255,255,.2);color:#fff}
+.stand tr.ons .p{color:#fff}
+.stand tr.ons .club-logo{box-shadow:none}
+.stand .ext{display:none}
+@media (min-width:520px){.stand .ext{display:table-cell}.stand .t{max-width:none}}
+.stand sup{color:#e5484d;font-size:10px;margin-left:2px}
+.stand-uitleg{font-size:11px;color:var(--tekst-zacht);margin:8px 2px 0;line-height:1.5}
+.fout-kaart{background:var(--kaart);border:1px solid var(--rand);border-radius:18px;padding:22px 18px;text-align:center;display:grid;gap:6px;justify-items:center}
+.fout-kaart .fk-ic{font-size:34px}
+.fout-kaart b{font-size:17px}
+.fout-kaart p{margin:0;font-size:14px;color:var(--tekst-zacht);line-height:1.5;max-width:340px}
+.fout-kaart .fk-beheer{font-size:12px;background:#f2f5fa;border-radius:10px;padding:8px 10px;margin-top:4px}
+.fk-acties{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div id="splash" aria-hidden="true">
+  <img src="logo.png" alt="">
+  <div class="yell" id="yell"></div>
+  <div class="tik">Tik om verder te gaan</div>
+</div>
+
+<header>
+  <div class="kop">
+    <img class="logo" src="logo.png" alt="R.K.V.V. Wijnandia">
+    <h1 class="verborgen">R.K.V.V. Wijnandia, Wijnandsrade</h1>
+    <div class="kop-rechts">
+      <button id="installeer" hidden>Installeer app</button>
+      <button id="infoKnop" aria-label="Informatie over de app">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".6" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="ios-tip" id="iosTip" hidden>📲 Zet Wijnandia op je beginscherm: tik op <b>Deel</b> en kies <b>Zet op beginscherm</b>.</div>
+  <!-- UITSLAGEN -->
+  <section id="uitslagen" class="actief">
+    <h2>Wedstrijden</h2>
+    <p class="sub" id="compTitel">Programma, uitslagen en stand · seizoen 2026/2027</p>
+
+    <div class="melding-kaart" data-soort="uitslagen" hidden>
+      <span class="bel" aria-hidden="true">🔔</span>
+      <div class="mk-tekst"><b>Meldingen bij nieuwe uitslagen</b><span class="mk-uitleg">Krijg een seintje zodra een uitslag van Wijnandia bekend is.</span></div>
+      <button class="schakel" role="switch" aria-checked="false" aria-label="Meldingen bij nieuwe uitslagen"><span></span></button>
+    </div>
+
+    <div class="teams" id="teams" role="tablist" aria-label="Kies een team"></div>
+
+    <div id="hvOverzicht" class="hv-overzicht"><div class="laden">Wedstrijden laden…</div></div>
+
+    <div id="hvLijsten">
+      <div class="seg" role="tablist" aria-label="Onderdeel">
+        <button data-deel="program" class="actief">Programma</button>
+        <button data-deel="results">Uitslagen</button>
+        <button data-deel="leaguetable">Stand</button>
+      </div>
+      <label class="filter" id="filterWrap"><input type="checkbox" id="alleenOns" checked> Alleen wedstrijden van Wijnandia</label>
+      <div id="hvInhoud" class="hv-inhoud" aria-live="polite"></div>
+    </div>
+    <p class="bron" id="hvStatus"></p>
+  </section>
+
+  <!-- CLUBNIEUWS -->
+  <section id="nieuws">
+    <h2>Clubnieuws</h2>
+    <p class="sub">Berichten van het bestuur van R.K.V.V. Wijnandia.</p>
+    <div class="melding-kaart" data-soort="nieuws" hidden>
+      <span class="bel" aria-hidden="true">📣</span>
+      <div class="mk-tekst"><b>Meldingen bij clubnieuws</b><span class="mk-uitleg">Krijg een seintje bij nieuwe berichten van het bestuur.</span></div>
+      <button class="schakel" role="switch" aria-checked="false" aria-label="Meldingen bij clubnieuws"><span></span></button>
+    </div>
+    <div id="nieuwsLijst" class="nieuws-lijst"><div class="laden">Nieuws laden…</div></div>
+  </section>
+
+  <!-- SPELEN: voorspellen, Man of the Match, weekquiz -->
+  <section id="spelen">
+    <h2>Spelen</h2>
+    <div class="seg spel-seg" role="tablist" aria-label="Kies een spel">
+      <button data-spel="voorspellen" class="actief">Voorspellen</button>
+      <button data-spel="motm">Man of the Match</button>
+      <button data-spel="quiz">Weekquiz</button>
+    </div>
+
+    <div id="deel-voorspellen" class="spel-deel">
+    <p class="sub" id="vsSub">Voorspel de uitslag van Wijnandia 1. Elke dinsdag begint een nieuwe ronde.</p>
+
+    <div id="vsWedstrijd" class="vs-wedstrijd"><div class="laden">Wedstrijd laden…</div></div>
+
+    <form id="vsForm" class="vs-form" hidden novalidate>
+      <label class="vs-label" for="vsNaam">Je naam</label>
+      <input id="vsNaam" name="naam" type="text" maxlength="30" autocomplete="name" placeholder="Bijv. Rick Storms" required>
+      <div class="vs-score">
+        <div class="vs-ploeg"><span id="vsThuisNaam">Thuis</span>
+          <div class="stepper"><button type="button" data-k="thuis" data-d="-1" aria-label="Thuis min">−</button><output id="vsThuis">0</output><button type="button" data-k="thuis" data-d="1" aria-label="Thuis plus">+</button></div></div>
+        <span class="vs-streep">–</span>
+        <div class="vs-ploeg"><span id="vsUitNaam">Uit</span>
+          <div class="stepper"><button type="button" data-k="uit" data-d="-1" aria-label="Uit min">−</button><output id="vsUit">0</output><button type="button" data-k="uit" data-d="1" aria-label="Uit plus">+</button></div></div>
+      </div>
+      <p class="vs-fout" id="vsFout" role="alert"></p>
+      <button type="submit" class="knop hoofd breed" id="vsVerstuur">Voorspelling insturen</button>
+      <div class="vs-bevestig" id="vsBevestig" hidden>
+        <p><b>Weet je het zeker?</b> Je voorspelling <span id="vsSamenvatting"></span> kun je daarna niet meer aanpassen.</p>
+        <div class="knoppen"><button type="button" class="knop hoofd" id="vsJa">Ja, insturen</button><button type="button" class="knop licht" id="vsNee">Nog even wijzigen</button></div>
+      </div>
+    </form>
+
+    <div id="vsMijn" class="vs-mijn" hidden></div>
+
+    <h3 class="vs-kop">Leaderboard <span id="vsRonde"></span></h3>
+    <div id="vsBord" class="vs-bord"></div>
+    <p class="vs-regels">Exacte uitslag: <b>3 punten</b> · Juiste winnaar of gelijkspel: <b>1 punt</b>. Voorspellen kan tot de aftrap; daarna worden alle voorspellingen zichtbaar. Bij gelijke punten telt wie het eerst voorspelde.</p>
+    </div>
+
+    <div id="deel-motm" class="spel-deel" hidden>
+      <p class="sub" id="motmSub">Stem op de beste speler van Wijnandia 1 in de laatste wedstrijd.</p>
+      <div id="motmWedstrijd" class="vs-wedstrijd"><div class="laden">Laden…</div></div>
+      <div id="motmStem" class="motm-stem"></div>
+      <h3 class="vs-kop">Seizoensklassement</h3>
+      <div id="motmBord" class="vs-bord"></div>
+      <p class="vs-regels">Stemmen kan zodra de uitslag bekend is, tot 3 dagen na de wedstrijd. Eén stem per telefoon. Wie de meeste stemmen krijgt, is Man of the Match (👑).</p>
+    </div>
+
+    <div id="deel-quiz" class="spel-deel" hidden>
+      <p class="sub">Elke zondag om 06:00 een nieuwe vraag over 75 jaar Wijnandia. Elk goed antwoord is 1 punt.</p>
+      <div id="quizMijn"></div>
+      <h3 class="vs-kop">Quizklassement</h3>
+      <div id="quizBord" class="vs-bord"><div class="vs-leeg">Laden…</div></div>
+      <p class="vs-regels">Je speelt onder één vaste naam. Per week kun je één keer antwoorden; het klassement telt alle weken bij elkaar op.</p>
+    </div>
+  </section>
+
+  <!-- INFO -->
+  <section id="info">
+    <button class="terug" id="infoTerug">‹ Terug</button>
+    <div class="info-kop">
+      <img src="icon-192.png" alt="" width="64" height="64">
+      <div><h2>R.K.V.V. Wijnandia</h2><p class="sub">De clubapp van Wijnandsrade</p></div>
+    </div>
+    <dl class="info-lijst">
+      <div><dt>Versie</dt><dd id="infoVersie">1.0.0</dd></div>
+      <div><dt>Maker</dt><dd>Storms agency</dd></div>
+      <div><dt>Developer</dt><dd>R-deco</dd></div>
+    </dl>
+    <h3 class="info-tussenkop">Wedstrijdgegevens</h3>
+    <p class="info-tekst">Programma, uitslagen en standen worden geleverd door:</p>
+    <ul class="info-links">
+      <li><a href="https://www.hollandsevelden.nl" rel="dofollow" target="_blank">Hollandse Velden</a></li>
+      <li><a href="https://www.voetbalinbelgie.be" rel="dofollow" target="_blank">Voetbal in België</a></li>
+      <li><a href="https://www.liguesdefoot.fr" rel="dofollow" target="_blank">Ligues de Foot</a></li>
+    </ul>
+    <p class="info-klein">De gegevens worden handmatig bijgehouden door vrijwilligers en kunnen fouten bevatten.</p>
+  </section>
+
+  <!-- ACTIVITEITEN -->
+  <section id="activiteiten">
+    <h2>Activiteiten</h2>
+    <p class="sub">Seizoen 2026/2027. Tik op een knop om een activiteit direct in je agenda te zetten.</p>
+    <div class="acties">
+      <button class="knop licht" id="alles">＋ Alle activiteiten in agenda</button>
+    </div>
+    <div class="lijst" id="lijst"></div>
+  </section>
+
+  <footer class="voet">
+    Wedstrijdgegevens:
+    <a href="https://www.hollandsevelden.nl" rel="dofollow">Hollandse Velden</a> ·
+    <a href="https://www.voetbalinbelgie.be" rel="dofollow">Voetbal in België</a> ·
+    <a href="https://www.liguesdefoot.fr" rel="dofollow">Ligues de Foot</a>
+  </footer>
+</main>
+
+<button id="quizKnop" aria-label="Weekvraag openen" hidden>
+  <span class="label">Weekvraag!</span>
+  <span class="bol">?<span class="stip"></span></span>
+</button>
+
+<nav>
+  <button class="actief" data-tab="uitslagen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg>Wedstrijden
+  </button>
+  <button data-tab="nieuws">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 10v4a1 1 0 0 0 1 1h2l6 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>Nieuws
+  </button>
+  <button data-tab="spelen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>Spelen
+  </button>
+  <button data-tab="activiteiten">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Activiteiten
+  </button>
+</nav>
+
+<script>
+/* ============================================================
+   3. ACTIVITEITEN — seizoen 2026/2027
+   datum: "JJJJ-MM-DD"
+   start/eind: "UU:MM". Laat start leeg ("") als de tijd nog niet bekend is:
+   dan wordt het een hele-dag-activiteit met "Tijd volgt nog".
+   locatie en omschrijving zijn optioneel.
+   ============================================================ */
+const ACTIVITEITEN = [
+  { titel:"Seizoensopening",         datum:"2026-09-20", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Feestavond met DJ",       datum:"2026-09-25", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Speciaal bier avond",     datum:"2026-10-30", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Darttoernooi",            datum:"2026-12-19", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Nieuwjaarsborrel",        datum:"2027-01-07", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Haringhappen",            datum:"2027-02-11", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Quiz avond",              datum:"2027-03-05", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Seizoensafsluiting",      datum:"2027-05-17", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Kermiszondag",            datum:"2027-05-23", start:"", eind:"", locatie:"", omschrijving:"" },
+  { titel:"Jeu de Boules toernooi",  datum:"2027-06-12", start:"", eind:"", locatie:"", omschrijving:"" }
+];
+
+/* ---------- vanaf hier niets aanpassen ---------- */
+const MAANDEN=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+const DAGEN=["zo","ma","di","wo","do","vr","za"];
+const pad=n=>String(n).padStart(2,"0");
+
+function eindTijd(a){ // standaard 2 uur als er geen eindtijd is
+  if(a.eind) return a.eind;
+  const [u,m]=a.start.split(":").map(Number); return pad((u+2)%24)+":"+pad(m);
+}
+function stamp(datum,tijd){return datum.replace(/-/g,"")+"T"+tijd.replace(":","")+"00";}
+function dagNa(datum){const d=new Date(datum+"T12:00");d.setDate(d.getDate()+1);
+  return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());}
+function esc(s){return (s||"").replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");}
+function html(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+const VTZ=["BEGIN:VTIMEZONE","TZID:Europe/Amsterdam",
+ "BEGIN:DAYLIGHT","TZOFFSETFROM:+0100","TZOFFSETTO:+0200","TZNAME:CEST","DTSTART:19700329T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","END:DAYLIGHT",
+ "BEGIN:STANDARD","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD",
+ "END:VTIMEZONE"];
+
+function vevent(a,i){
+  const nu=new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+  const heleDag=!a.start;
+  return ["BEGIN:VEVENT",
+    "UID:wijnandia-"+a.datum.replace(/-/g,"")+"-"+i+"@wijnandia",
+    "DTSTAMP:"+nu,
+    heleDag?"DTSTART;VALUE=DATE:"+a.datum.replace(/-/g,""):"DTSTART;TZID=Europe/Amsterdam:"+stamp(a.datum,a.start),
+    heleDag?"DTEND;VALUE=DATE:"+dagNa(a.datum):"DTEND;TZID=Europe/Amsterdam:"+stamp(a.datum,eindTijd(a)),
+    "SUMMARY:"+esc("Wijnandia: "+a.titel),
+    a.locatie?"LOCATION:"+esc(a.locatie):"",
+    "DESCRIPTION:"+esc((a.omschrijving?a.omschrijving+"\n":"")+(heleDag?"Tijd volgt nog. ":"")+"Activiteit van R.K.V.V. Wijnandia."),
+    "BEGIN:VALARM",heleDag?"TRIGGER:-PT6H":"TRIGGER:-PT2H","ACTION:DISPLAY","DESCRIPTION:"+esc(a.titel),"END:VALARM",
+    "END:VEVENT"].filter(Boolean);
+}
+function downloadIcs(items,naam){
+  const regels=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Wijnandia//Activiteiten//NL","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "X-WR-CALNAME:Wijnandia",...VTZ];
+  items.forEach(([a,i])=>regels.push(...vevent(a,i)));
+  regels.push("END:VCALENDAR");
+  const blob=new Blob([regels.join("\r\n")],{type:"text/calendar;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url; link.download=naam+".ics";
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function googleLink(a){
+  const dates=a.start? stamp(a.datum,a.start)+"/"+stamp(a.datum,eindTijd(a))
+                     : a.datum.replace(/-/g,"")+"/"+dagNa(a.datum);
+  const p=new URLSearchParams({action:"TEMPLATE",text:"Wijnandia: "+a.titel,dates,
+    ctz:"Europe/Amsterdam",details:(a.omschrijving||"")+(a.start?"":" Tijd volgt nog."),location:a.locatie||""});
+  return "https://calendar.google.com/calendar/render?"+p.toString();
+}
+
+function kaart([a,i],voorbij){
+  const d=new Date(a.datum+"T00:00");
+  const tijd=a.start?`${a.start}${a.eind?" – "+a.eind:""}`:"Tijd volgt nog";
+  return `<article class="act${voorbij?" verlopen":""}">
+    <div class="datum"><div class="m">${DAGEN[d.getDay()]}</div><div class="d">${d.getDate()}</div><div class="m">${MAANDEN[d.getMonth()]}</div></div>
+    <div>
+      <h3>${html(a.titel)}</h3>
+      <div class="meta"><span>🕒 ${tijd}</span>${a.locatie?`<span>📍 ${html(a.locatie)}</span>`:""}</div>
+      ${a.omschrijving?`<p class="omschr">${html(a.omschrijving)}</p>`:""}
+      ${voorbij?"":`<div class="knoppen">
+        <button class="knop hoofd" data-ics="${i}">📅 Zet in agenda</button>
+        <a class="knop licht" href="${googleLink(a)}" target="_blank" rel="noopener">Google Agenda</a>
+      </div>`}
+    </div></article>`;
+}
+
+function render(){
+  const lijst=document.getElementById("lijst");
+  const vandaag=new Date(); vandaag.setHours(0,0,0,0);
+  const items=ACTIVITEITEN.map((a,i)=>[a,i]).sort((x,y)=>(x[0].datum+(x[0].start||"")).localeCompare(y[0].datum+(y[0].start||"")));
+  const komend=items.filter(([a])=>new Date(a.datum+"T00:00")>=vandaag);
+  const geweest=items.filter(([a])=>new Date(a.datum+"T00:00")<vandaag).reverse();
+  let h=komend.length?komend.map(x=>kaart(x,false)).join(""):'<div class="leeg">Er staan geen komende activiteiten meer gepland.</div>';
+  if(geweest.length) h+=`<h4 class="tussenkop">Al geweest</h4>`+geweest.map(x=>kaart(x,true)).join("");
+  lijst.innerHTML=h;
+  lijst.querySelectorAll("[data-ics]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.ics; downloadIcs([[ACTIVITEITEN[i],i]],"Wijnandia_"+ACTIVITEITEN[i].titel.replace(/[^\w-]+/g,"_"));
+  });
+  const alles=document.getElementById("alles");
+  alles.hidden=!komend.length;
+  alles.onclick=()=>downloadIcs(komend,"Wijnandia_activiteiten");
+}
+
+/* ============================================================
+   4. WEDSTRIJDEN — HollandseVelden API (via de Netlify-tussenstap)
+   clubPad: het clubadres op HollandseVelden, met / aan het eind.
+   Controleer dit op www.hollandsevelden.nl (zoek de club, kijk naar de adresbalk).
+   ============================================================ */
+const HV = {
+  proxy:     "/api/hv",              // tussenstap op Netlify (houdt de API-sleutel geheim)
+  clubPad:   "/clubs/w/wijnandia/",  // clubadres op HollandseVelden
+  team:      "1",                    // team dat als eerste wordt getoond
+  shirts:    "https://www.hollandsevelden.nl/i/t/"
+};
+
+const hv={club:null,teams:[],team:null,data:null,deel:"program"};
+const hvInhoud=document.getElementById("hvInhoud");
+const hvStatus=document.getElementById("hvStatus");
+
+function bewaar(k,v){try{localStorage.setItem("hv:"+k,JSON.stringify({t:Date.now(),v}))}catch(e){}}
+function haalOp(k){try{return JSON.parse(localStorage.getItem("hv:"+k))}catch(e){return null}}
+
+async function hvGet(pad){
+  const cache=haalOp(pad);
+  try{
+    let r;
+    try{ r=await fetch(HV.proxy+pad,{headers:{Accept:"application/json"}}); }
+    catch(_){ const f=new Error("offline"); f.reden="offline"; throw f; }
+    const json=(r.headers.get("content-type")||"").includes("json");
+    if(!r.ok){
+      const f=new Error("status "+r.status); f.status=r.status;
+      f.reden=!json?"geen-functies":r.status===503?"geen-sleutel":r.status===401?"geweigerd":r.status===404?"onbekend-pad":"server";
+      throw f;
+    }
+    if(!json){ const f=new Error("geen json"); f.reden="geen-functies"; throw f; }
+    const v=await r.json(); bewaar(pad,v); return {v,t:Date.now(),vers:true};
+  }catch(e){
+    if(cache) return {v:cache.v,t:cache.t,vers:false};
+    throw e;
+  }
+}
+
+function datumVan(s){ // "2026-03-15T14:30:00+01:00" of "2026-03-15 14:30:00"
+  const d=new Date(String(s).replace(" ","T")); return isNaN(d)?null:d;
+}
+function tijdTekst(d){ return (d.getHours()||d.getMinutes())? pad(d.getHours())+":"+pad(d.getMinutes()) : "tijd n.n.b."; }
+function dagTekst(d){ return ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"][d.getDay()]+" "+d.getDate()+" "+MAANDEN[d.getMonth()]; }
+function shirt(f){ return f?`<img src="${HV.shirts}${html(f)}" alt="" loading="lazy" onerror="this.remove()">`:""; }
+
+function shirtVan(naam){
+  const rel=hv.data?.competition?.links?.related||[];
+  const lt=hv.data?.competition?.leaguetable||[];
+  return (lt.find(x=>x.name===naam)||rel.find(x=>x.name===naam)||{}).shirt;
+}
+function isOns(naam){
+  if(!naam||!hv.club) return false;
+  const label=hv.team?.label||"", n=naam.trim().toLowerCase();
+  if(label && n===label.toLowerCase()) return true;
+  if(hv.team?.code==="1" && n===String(hv.club.name).toLowerCase()) return true;
+  return false;
+}
+function isAfgelast(st){ return /afgelast|uitgesteld|vervallen|stopgezet|forfait/i.test(st||""); }
+
+/* Route naar uitwedstrijden. Vul hier het adres van een sportpark in als de
+   automatische zoekopdracht niet goed uitkomt. Gebruik de clubnaam zonder teamnummer.
+   Voorbeeld:  "VV Bergdal": "Sportpark De Berg, Bergweg 1, Bergdal",          */
+const SPORTPARKEN = {
+};
+function clubZonderTeam(n){ return String(n||"").replace(/\s+(\d+|VR\s?\d+|JO\d+(-\d+)?|MO\d+(-\d+)?|\d+\+\d*)$/i,"").trim(); }
+function routeLink(tegenstander){
+  const club=clubZonderTeam(tegenstander);
+  const doel=SPORTPARKEN[club]||SPORTPARKEN[tegenstander]||`${club} voetbalvereniging sportpark`;
+  return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(doel);
+}
+/* ---------- hulpjes ---------- */
+function uitkomst(w){ // W/G/V vanuit Wijnandia gezien, of null
+  if(!w.result||isAfgelast(w.status)) return null;
+  const thuis=isOns(w.home), uit=isOns(w.away); if(!thuis&&!uit) return null;
+  const v=thuis?+w.homeGoals:+w.awayGoals, t=thuis?+w.awayGoals:+w.homeGoals;
+  return v>t?"W":v===t?"G":"V";
+}
+function uitkomstVoor(w,naam){
+  if(!w.result||isAfgelast(w.status)) return null;
+  const v=w.home===naam?+w.homeGoals:+w.awayGoals, t=w.home===naam?+w.awayGoals:+w.homeGoals;
+  return v>t?"W":v===t?"G":"V";
+}
+const UITKOMST={W:"Gewonnen",G:"Gelijk",V:"Verloren"};
+function vormVan(naam,res,n=5){
+  return (res||[]).filter(w=>(w.home===naam||w.away===naam)&&w.result&&!isAfgelast(w.status))
+    .map(w=>({w,d:datumVan(w.date)})).filter(x=>x.d).sort((a,b)=>b.d-a.d).slice(0,n).reverse()
+    .map(x=>uitkomstVoor(x.w,naam));
+}
+function vormBolletjes(vorm,klein){
+  return `<span class="vorm${klein?" mini":""}">${vorm.map(u=>`<span class="v-${u}" title="${UITKOMST[u]}">${klein?"":u}</span>`).join("")}</span>`;
+}
+function initialen(naam){
+  const w=clubZonderTeam(naam).split(/\s+/).filter(x=>!/^(r\.?k\.?)?(s\.?v\.?|v\.?v\.?|f\.?c\.?|s\.?c\.?|rkvv|rksv|rkav|vv|sv|fc|sc)$/i.test(x));
+  return (w.length>1?w[0][0]+w[1][0]:(w[0]||naam).slice(0,2)).toUpperCase();
+}
+function clubLogo(naam){
+  if(isOns(naam)) return `<span class="club-logo ons"><img src="icon-192.png" alt=""></span>`;
+  const f=shirtVan(naam);
+  return `<span class="club-logo">${f?`<img src="${HV.shirts}${html(f)}" alt="" onerror="this.replaceWith(document.createTextNode('${initialen(naam)}'))">`:initialen(naam)}</span>`;
+}
+function rangTekst(n){ return n+"e"; }
+function dagenTot(d){ const a=new Date(); a.setHours(0,0,0,0); const b=new Date(d); b.setHours(0,0,0,0); return Math.round((b-a)/864e5); }
+function aftelTekst(d){ const n=dagenTot(d); return n<0?"Gespeeld":n===0?"Vandaag":n===1?"Morgen":`Over ${n} dagen`; }
+
+/* ---------- overzicht bovenaan ---------- */
+function tekenOverzicht(c){
+  const res=c.results||[], prog=c.program||[];
+  const ons=x=>isOns(x.home)||isOns(x.away);
+  const volgende=prog.filter(w=>ons(w)&&!isAfgelast(w.status)).map(w=>({...w,d:datumVan(w.date)})).filter(w=>w.d)
+    .sort((a,b)=>a.d-b.d).find(w=>dagenTot(w.d)>=0);
+  const gespeeld=res.filter(w=>ons(w)&&uitkomst(w)).map(w=>({...w,d:datumVan(w.date)})).filter(w=>w.d).sort((a,b)=>b.d-a.d);
+  const laatste=gespeeld[0];
+  const stand=(c.leaguetable||[]).find(x=>isOns(x.name));
+  const vorm=gespeeld.slice(0,5).reverse().map(uitkomst);
+  let h="";
+  if(volgende){
+    const w=volgende, tijdBekend=w.d.getHours()+w.d.getMinutes()>0, uit=isOns(w.away)&&!isOns(w.home);
+    const magVoorspellen=(hv.team?.code||"1")===HV.team;
+    h+=`<div class="next-kaart">
+      <div class="nk-boven"><span class="nk-label">Volgende wedstrijd</span><span class="nk-chip">${aftelTekst(w.d)}</span></div>
+      <div class="nk-teams">
+        <div class="nk-ploeg">${clubLogo(w.home)}<span>${html(w.home)}</span></div>
+        <div class="nk-mid"><span class="nk-tijd">${tijdBekend?tijdTekst(w.d):"–:–"}</span><span class="nk-dag">${dagTekst(w.d)}</span></div>
+        <div class="nk-ploeg">${clubLogo(w.away)}<span>${html(w.away)}</span></div>
+      </div>
+      <div class="nk-acties">
+        ${uit?`<a class="knop-glas" href="${routeLink(w.home)}" target="_blank" rel="noopener">📍 Route</a>`:`<span class="knop-glas stil">🏠 Thuiswedstrijd</span>`}
+        <button class="knop-glas" type="button" id="nkAgenda">📅 In agenda</button>
+        ${magVoorspellen?`<button class="knop-glas" type="button" id="nkVoorspel">🏆 Voorspel</button>`:""}
+      </div>
+    </div>`;
+  }else{
+    h+=`<div class="next-kaart leeg"><span class="nk-label">Volgende wedstrijd</span><p>Er staat nog geen nieuwe wedstrijd op het programma.</p></div>`;
+  }
+  if(stand||vorm.length){
+    h+=`<div class="hv-tegels">
+      ${stand?`<div class="tegel"><span class="t-label">Positie</span><span class="t-groot">${rangTekst(stand.position)}</span><span class="t-klein">${stand.points} punten · ${stand.matches} gespeeld</span></div>`:""}
+      ${vorm.length?`<div class="tegel"><span class="t-label">Vorm</span>${vormBolletjes(vorm)}<span class="t-klein">laatste ${vorm.length} wedstrijd${vorm.length===1?"":"en"}</span></div>`:""}
+    </div>`;
+  }
+  if(laatste){
+    const u=uitkomst(laatste);
+    h+=`<div class="laatste"><span class="l-badge v-${u}">${u}</span>
+      <div class="l-tekst"><span class="l-label">Laatste uitslag · ${dagTekst(laatste.d)}</span>
+      <span class="l-wed"><span class="${isOns(laatste.home)?"ons-naam":""}">${html(laatste.home)}</span> <b>${laatste.homeGoals} – ${laatste.awayGoals}</b> <span class="${isOns(laatste.away)?"ons-naam":""}">${html(laatste.away)}</span></span></div></div>`;
+  }
+  document.getElementById("hvOverzicht").innerHTML=h;
+  if(volgende){
+    const w=volgende, tijdBekend=w.d.getHours()+w.d.getMinutes()>0;
+    document.getElementById("nkAgenda").onclick=()=>downloadIcs([[{
+      titel:`${w.home} – ${w.away}`, datum:`${w.d.getFullYear()}-${pad(w.d.getMonth()+1)}-${pad(w.d.getDate())}`,
+      start:tijdBekend?tijdTekst(w.d):"", eind:"", locatie:isOns(w.home)?"Sportpark Wijnandia, Wijnandsrade":clubZonderTeam(w.home),
+      omschrijving:`${hv.team?.label||"Wijnandia"} · ${c.meta?.title||""}`},900]],"Wijnandia_wedstrijd");
+    document.getElementById("nkVoorspel")?.addEventListener("click",()=>toonTab("voorspellen"));
+  }
+}
+
+/* ---------- lijsten ---------- */
+function tekenWedstrijden(lijst,uitslag){
+  const filter=document.getElementById("alleenOns").checked;
+  let rijen=(lijst||[]).map(w=>({...w,d:datumVan(w.date)})).filter(w=>w.d);
+  let alles=false;
+  if(filter){ const ons=rijen.filter(w=>isOns(w.home)||isOns(w.away)); if(ons.length) rijen=ons; else alles=rijen.length>0; }
+  rijen.sort((a,b)=>uitslag?b.d-a.d:a.d-b.d);
+  if(!rijen.length) return `<div class="melding">${uitslag?"Nog geen uitslagen bekend.":"Er staan geen wedstrijden meer op het programma."}</div>`;
+  let h=alles?`<div class="melding">Geen wedstrijden van ${html(hv.team?.label||"Wijnandia")} gevonden; hieronder alle wedstrijden van de competitie.</div>`:"";
+  let vorige="";
+  for(const w of rijen){
+    const dag=dagTekst(w.d);
+    if(dag!==vorige){h+=`<div class="dagkop">${dag}</div>`;vorige=dag;}
+    const ons=isOns(w.home)||isOns(w.away), af=isAfgelast(w.status), u=uitkomst(w);
+    const midden=uitslag&&!af&&w.result
+      ? `<span class="score${u?" v-"+u:""}">${w.homeGoals}<i>–</i>${w.awayGoals}</span>`
+      : `<span class="tijd">${tijdTekst(w.d)}</span>`;
+    h+=`<div class="wed${ons?" ons":""}">
+      <div class="ploeg">${clubLogo(w.home)}<span class="${isOns(w.home)?"ons-naam":""}">${html(w.home)}</span></div>
+      <div class="mid">${midden}${af?`<span class="badge">${html(w.status)}</span>`:""}</div>
+      <div class="ploeg uit">${clubLogo(w.away)}<span class="${isOns(w.away)?"ons-naam":""}">${html(w.away)}</span></div>
+      ${!uitslag&&!af&&isOns(w.away)&&!isOns(w.home)?`<a class="route" href="${routeLink(w.home)}" target="_blank" rel="noopener">📍 Route naar ${html(clubZonderTeam(w.home))}</a>`:""}
+    </div>`;
+  }
+  return h;
+}
+function tekenStand(lt,res){
+  if(!lt||!lt.length) return `<div class="melding">De stand is nog niet beschikbaar.</div>`;
+  const rij=x=>{const ds=(x.goalsFor||0)-(x.goalsAgainst||0);
+    const straf=Number(x.pointsPunished)>0?`<sup title="Strafpunten">-${html(x.pointsPunished)}</sup>`:"";
+    const vorm=vormVan(x.name,res);
+    return `<tr class="${isOns(x.name)?"ons":""}${x.position===1?" eerste":""}">
+      <td><span class="pos">${x.position}</span></td>
+      <td class="t"><div class="t-cel">${clubLogo(x.name)}<div class="t-naam"><span>${html(x.name)}</span>${vorm.length?vormBolletjes(vorm,true):""}</div></div></td>
+      <td>${x.matches}</td><td class="ext">${x.wins}</td><td class="ext">${x.ties}</td><td class="ext">${x.losses}</td>
+      <td>${ds>0?"+":""}${ds}</td><td class="p">${x.points}${straf}</td></tr>`;};
+  return `<div class="stand-wrap"><table class="stand"><thead><tr><th>#</th><th class="t">Team</th><th title="Gespeeld">G</th><th class="ext" title="Gewonnen">W</th><th class="ext" title="Gelijk">G</th><th class="ext" title="Verloren">V</th><th title="Doelsaldo">+/-</th><th title="Punten">P</th></tr></thead>
+    <tbody>${lt.map(rij).join("")}</tbody></table></div>
+    <p class="stand-uitleg">G = gespeeld · +/- = doelsaldo · P = punten · bolletjes = vorm laatste 5 (groen gewonnen, oranje gelijk, rood verloren)</p>`;
+}
+function tekenHv(){
+  const c=hv.data?.competition;
+  document.getElementById("filterWrap").hidden=hv.deel==="leaguetable";
+  if(!c){hvInhoud.innerHTML=`<div class="melding">Geen competitiegegevens voor dit team.</div>`;document.getElementById("hvOverzicht").innerHTML="";return;}
+  document.getElementById("compTitel").textContent=[hv.team?.label,c.meta?.title,c.meta?.district,c.meta?.season].filter(Boolean).join(" · ");
+  tekenOverzicht(c);
+  hvInhoud.innerHTML= hv.deel==="leaguetable"? tekenStand(c.leaguetable,c.results)
+    : tekenWedstrijden(c[hv.deel], hv.deel==="results");
+}
+function toonStatus(t,vers){
+  const d=new Date(t);
+  hvStatus.textContent=(vers?"Bijgewerkt om ":"Offline – laatst bijgewerkt ")+pad(d.getHours())+":"+pad(d.getMinutes())+(vers?"":" ("+d.getDate()+" "+MAANDEN[d.getMonth()]+")");
+}
+async function laadTeam(code){
+  const t=hv.teams.find(x=>x.code===code)||hv.teams[0]; if(!t) return;
+  hv.team=t;
+  document.querySelectorAll("#teams button").forEach(b=>b.classList.toggle("actief",b.dataset.code===t.code));
+  try{localStorage.setItem("hv:team",t.code)}catch(e){}
+  hvInhoud.innerHTML=`<div class="laden">Wedstrijden van ${html(t.label)} laden…</div>`;
+  try{ const r=await hvGet(HV.clubPad+t.code+"/"); hv.data=r.v; tekenHv(); toonStatus(r.t,r.vers); }
+  catch(e){ toonFout(e); }
+}
+const FOUTEN={
+  "offline":["Geen internetverbinding","Maak verbinding met internet en probeer het opnieuw."],
+  "geen-functies":["Wedstrijden nog niet beschikbaar","De serveronderdelen van de app staan nog niet online.","Beheer: upload de nieuwste versie van de app (met de map netlify) en doe een nieuwe deploy."],
+  "geen-sleutel":["Wedstrijden nog niet beschikbaar","De koppeling met HollandseVelden is nog niet ingesteld.","Beheer: zet HV_API_KEY bij Netlify › Environment variables en doe een nieuwe deploy."],
+  "geweigerd":["Wedstrijden nog niet beschikbaar","HollandseVelden weigert de API-sleutel.","Beheer: controleer of HV_API_KEY klopt en toegang heeft tot /clubs/w/wijnandia/."],
+  "onbekend-pad":["Club niet gevonden","HollandseVelden kent het clubadres niet.","Beheer: controleer het clubadres (HV_CLUB_PAD en clubPad in index.html)."],
+  "server":["Even geen wedstrijdgegevens","HollandseVelden is tijdelijk niet bereikbaar. Probeer het straks opnieuw."]
+};
+function toonFout(e){
+  const [kop,tekst,beheer]=FOUTEN[e?.reden]||FOUTEN.server;
+  hvStatus.textContent=""; document.getElementById("hvLijsten").hidden=true;
+  document.getElementById("teams").hidden=true;
+  document.getElementById("hvOverzicht").innerHTML=`<div class="fout-kaart">
+    <span class="fk-ic" aria-hidden="true">⚽</span><b>${kop}</b><p>${tekst}</p>${beheer?`<p class="fk-beheer">${beheer}</p>`:""}
+    <div class="fk-acties"><button class="knop hoofd" type="button" id="hvOpnieuw">Opnieuw proberen</button>
+    <a class="knop licht" href="https://www.hollandsevelden.nl/competities/2026-2027/zuid-2/zo/4b/" target="_blank" rel="noopener">Bekijk op HollandseVelden ↗</a></div></div>`;
+  document.getElementById("hvOpnieuw").onclick=()=>{document.getElementById("hvOverzicht").innerHTML=`<div class="laden">Wedstrijden laden…</div>`;startHv();};
+}
+async function startHv(){
+  try{
+    try{
+      const r=await hvGet(HV.clubPad);
+      hv.club=r.v.club; hv.teams=r.v.club?.teams||[];
+      if(!hv.teams.length) throw new Error("geen teams");
+    }catch(e){
+      if(["offline","geen-functies","geen-sleutel"].includes(e.reden)) throw e;
+      // sleutel geeft alleen toegang tot één team: dan alleen dat team tonen
+      const r=await hvGet(HV.clubPad+HV.team+"/");
+      if(!r.v?.club) throw e;
+      hv.club=r.v.club; hv.teams=[r.v.club.team||{code:HV.team,label:r.v.club.name+" "+HV.team}];
+    }
+    document.getElementById("hvLijsten").hidden=false;
+    document.getElementById("teams").hidden=hv.teams.length<2;
+    document.getElementById("teams").innerHTML=hv.teams.map(t=>`<button role="tab" data-code="${html(t.code)}">${html(t.label.replace(new RegExp("^"+String(hv.club.name).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\s*","i"),"")||t.label)}</button>`).join("");
+    document.querySelectorAll("#teams button").forEach(b=>b.onclick=()=>laadTeam(b.dataset.code));
+    let voorkeur=HV.team; try{voorkeur=localStorage.getItem("hv:team")||HV.team}catch(e){}
+    laadTeam(voorkeur);
+  }catch(e){ toonFout(e); }
+}
+document.querySelectorAll("#uitslagen .seg button").forEach(b=>b.onclick=()=>{
+  hv.deel=b.dataset.deel;
+  document.querySelectorAll("#uitslagen .seg button").forEach(x=>x.classList.toggle("actief",x===b));
+  tekenHv();
+});
+document.getElementById("alleenOns").onchange=tekenHv;
+startHv();
+
+/* ============================================================
+   5. WEEKQUIZ — elke zondag om 06:00 (Nederlandse tijd) een nieuwe vraag.
+   QUIZ_START: de zondag waarop vraag 1 begint. Na vraag 100 begint hij opnieuw.
+   ============================================================ */
+const QUIZ_START = "2026-10-04T06:00";   // zondag 4 oktober 2026, 06:00
+const QUIZ_BESTAND = "quiz/vragen.json";
+
+function amsterdamNu(){ // huidige Nederlandse kloktijd, als "wandklok"-getal (DST-proof)
+  const d=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Amsterdam",year:"numeric",month:"2-digit",day:"2-digit",
+    hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(p=>[p.type,p.value]));
+  return Date.UTC(+d.year,+d.month-1,+d.day,+d.hour,+d.minute,+d.second);
+}
+function quizWeek(){ // 0-gebaseerde index van de vraag van deze week + ms tot de volgende
+  const [dt,tm]=QUIZ_START.split("T"); const [j,m,dg]=dt.split("-").map(Number); const [u,mi]=tm.split(":").map(Number);
+  const start=Date.UTC(j,m-1,dg,u,mi), nu=amsterdamNu(), WEEK=7*864e5;
+  const n=Math.floor((nu-start)/WEEK);
+  return {n, tot:(n+1)*WEEK-(nu-start)};
+}
+function zoGeleden(ms){ const d=Math.floor(ms/864e5), u=Math.floor(ms/36e5)%24;
+  return d>1?`${d} dagen`:d===1?`1 dag en ${u} uur`:`${Math.max(1,Math.ceil(ms/36e5))} uur`; }
+
+const quiz={vragen:null,huidig:null,n:0,naam:null};
+const quizKnop=document.getElementById("quizKnop");
+function quizAntwoord(){try{return JSON.parse(localStorage.getItem("quiz:antwoord"))||{}}catch(e){return {}}}
+function quizBewaar(n,letter){try{localStorage.setItem("quiz:antwoord",JSON.stringify({n,letter}))}catch(e){}}
+function bewaardeNaam(){try{return localStorage.getItem("quiz:naam")||localStorage.getItem("vs:naam")||""}catch(e){return ""}}
+function markeerQuiz(){ quizKnop.classList.toggle("gedaan",quizAntwoord().n===quiz.n); }
+
+async function startQuiz(){
+  try{
+    const r=await fetch(QUIZ_BESTAND); const d=await r.json(); quiz.vragen=d.vragen;
+  }catch(e){ return; } // geen vragen = geen knop
+  const {n}=quizWeek(); if(n<0) return;   // quiz nog niet begonnen
+  quiz.n=n; quiz.huidig=quiz.vragen[n % quiz.vragen.length];
+  try{quiz.naam=localStorage.getItem("quiz:naam")}catch(e){}
+  markeerQuiz(); quizKnop.hidden=false;
+  if(quizAntwoord().n!==n){ setTimeout(()=>quizKnop.classList.add("open-label"),4200); setTimeout(()=>quizKnop.classList.remove("open-label"),9000); }
+  syncQuiz();
+}
+/* Naam en antwoord van deze week bij de server ophalen (bv. na het wissen van de telefoon) */
+async function syncQuiz(){
+  try{
+    const r=await fetch("/api/quiz?apparaat="+encodeURIComponent(apparaatId()),{cache:"no-store"});
+    if(!r.ok) return null;
+    const d=await r.json();
+    if(d.naam){quiz.naam=d.naam; try{localStorage.setItem("quiz:naam",d.naam)}catch(e){}}
+    if(d.mijnAntwoord && d.week===quiz.n){ quizBewaar(quiz.n,d.mijnAntwoord.letter); markeerQuiz(); }
+    return d;
+  }catch(e){ return null; }
+}
+function openQuiz(){
+  const q=quiz.huidig; if(!q) return;
+  document.getElementById("quiz")?.remove();
+  const {tot}=quizWeek();
+  const a=quizAntwoord(); const beantwoord=a.n===quiz.n?a.letter:null;
+  const naamNodig=!quiz.naam&&!beantwoord;
+  const el=document.createElement("div"); el.id="quiz"; el.setAttribute("role","dialog"); el.setAttribute("aria-modal","true"); el.setAttribute("aria-label","Weekvraag");
+  el.innerHTML=`<div class="vel">
+    <div class="qkop"><span class="wk">Weekvraag ${((quiz.n)%quiz.vragen.length)+1}</span><span class="cat">${html(q.categorie||"")}</span>
+      <button class="sluit" aria-label="Sluiten">×</button></div>
+    <p class="qvraag">${html(q.vraag)}</p>
+    ${q.afbeelding?`<img class="qfoto" src="quiz/${html(q.afbeelding)}" alt="Foto bij de vraag">`:""}
+    ${naamNodig?`<label class="qnaam"><span>Je naam voor het klassement</span><input id="qNaam" type="text" maxlength="30" autocomplete="name" placeholder="Bijv. Rick Storms" value="${html(bewaardeNaam())}"></label>`
+      :quiz.naam?`<p class="qals">Je speelt als <b>${html(quiz.naam)}</b></p>`:""}
+    <div class="qant">${q.antwoorden.map(x=>`<button data-l="${html(x.letter)}"><span class="lt">${html(x.letter)}</span><span>${html(x.tekst)}</span></button>`).join("")}</div>
+    <p class="qfout" role="alert"></p>
+    <div class="quitleg-plek"></div>
+    <button class="qbord-link" type="button">Bekijk het quizklassement ›</button>
+    <p class="qvolgende">Nieuwe vraag over ${zoGeleden(tot)} (zondag 06:00)</p>
+  </div>`;
+  document.body.appendChild(el); document.body.style.overflow="hidden";
+  const sluit=()=>{el.remove();document.body.style.overflow="";};
+  el.querySelector(".sluit").onclick=sluit;
+  el.addEventListener("click",e=>{if(e.target===el)sluit();});
+  document.addEventListener("keydown",function esc(e){if(e.key==="Escape"){sluit();document.removeEventListener("keydown",esc);}});
+  el.querySelector(".qbord-link").onclick=()=>{sluit();toonTab("quiz");};
+  const knoppen=[...el.querySelectorAll(".qant button")], fout=el.querySelector(".qfout");
+  const toon=(gekozen,noot)=>{
+    knoppen.forEach(b=>{b.disabled=true;
+      if(b.dataset.l===q.juist)b.classList.add("goed"); else if(b.dataset.l===gekozen)b.classList.add("fout");});
+    const goed=gekozen===q.juist;
+    el.querySelector(".qnaam")?.remove();
+    el.querySelector(".quitleg-plek").innerHTML=`<div class="quitleg"><b>${goed?"Goed zo! 🎉":"Helaas, het juiste antwoord is "+html(q.juist)+"."}</b>
+      ${html(q.uitleg||"")}${q.bron?`<span class="qbron">Bron: ${html(q.bron)}</span>`:""}${noot?`<span class="qbron">${noot}</span>`:""}</div>`;
+  };
+  if(beantwoord) toon(beantwoord);
+  knoppen.forEach(b=>b.onclick=async()=>{
+    const letter=b.dataset.l; fout.textContent="";
+    let naam=quiz.naam;
+    if(!naam){ const inp=el.querySelector("#qNaam"); naam=(inp?.value||"").replace(/\s+/g," ").trim();
+      if(naam.length<2){ fout.textContent="Vul eerst je naam in voor het klassement."; inp?.focus(); return; } }
+    knoppen.forEach(x=>x.disabled=true);
+    try{
+      const r=await fetch("/api/quiz",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({apparaat:apparaatId(),naam,week:quiz.n,letter})});
+      const d=await r.json().catch(()=>({}));
+      if(r.ok||(r.status===409&&d.mijnAntwoord)){
+        const def=r.ok?letter:d.mijnAntwoord.letter;
+        quiz.naam=d.naam||naam; try{localStorage.setItem("quiz:naam",quiz.naam)}catch(e){}
+        quizBewaar(quiz.n,def); toon(def, r.ok?"":"Je had deze week al geantwoord.");
+      }else if(r.status===400||r.status===409){
+        fout.textContent=d.fout||"Insturen lukte niet."; knoppen.forEach(x=>x.disabled=false);
+        if(d.veld==="naam") el.querySelector("#qNaam")?.focus();
+        return;
+      }else throw new Error("server");
+    }catch(e){
+      // geen verbinding: antwoord wel laten zien, maar het telt niet mee
+      quizBewaar(quiz.n,letter); toon(letter,"Geen verbinding: dit antwoord telt niet mee voor het klassement.");
+    }
+    markeerQuiz();
+    if(!document.getElementById("deel-quiz").hidden && document.getElementById("spelen").classList.contains("actief")) laadQuizBord();
+  });
+  el.querySelector(naamNodig?"#qNaam":".sluit").focus();
+}
+quizKnop.onclick=()=>{quizKnop.classList.remove("open-label");openQuiz();};
+startQuiz();
+// app lang open laten staan? Elke minuut checken of het al zondag 06:00 is geweest
+setInterval(()=>{ if(quiz.vragen && quizWeek().n!==quiz.n) startQuiz(); },60000);
+
+/* ============================================================
+   6. PUSHMELDINGEN — uitslagen en clubnieuws (verstuurd door Netlify)
+   ============================================================ */
+const pushKaarten=[...document.querySelectorAll(".melding-kaart[data-soort]")];
+const PUSH_TEKST={
+  uitslagen:{aan:"Meldingen staan aan. Je krijgt een seintje bij elke nieuwe uitslag.",uit:"Krijg een seintje zodra een uitslag van Wijnandia bekend is."},
+  nieuws:{aan:"Meldingen staan aan. Je krijgt een seintje bij nieuw clubnieuws.",uit:"Krijg een seintje bij nieuwe berichten van het bestuur."}};
+let pushSoorten=[];
+function b64uNaarBytes(s){const p="=".repeat((4-s.length%4)%4);const r=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(r,c=>c.charCodeAt(0));}
+function leesSoorten(){try{const s=JSON.parse(localStorage.getItem("push:soorten"));return Array.isArray(s)?s:null}catch(e){return null}}
+function bewaarSoorten(s){try{localStorage.setItem("push:soorten",JSON.stringify(s))}catch(e){}}
+function tekenPush(melding){
+  pushKaarten.forEach(k=>{const s=k.dataset.soort, aan=pushSoorten.includes(s);
+    k.querySelector(".schakel").setAttribute("aria-checked",aan?"true":"false");
+    k.querySelector(".mk-uitleg").textContent=melding||PUSH_TEKST[s][aan?"aan":"uit"];});
+}
+async function startPush(){
+  if(!location.protocol.startsWith("http")) return;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const losseApp=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+    if(ios&&!losseApp) pushKaarten.forEach(k=>{k.hidden=false;k.querySelector(".schakel").hidden=true;
+      k.querySelector(".mk-uitleg").textContent="Zet de app eerst op je beginscherm (Deel › Zet op beginscherm) en open hem daarvandaan; dan kun je meldingen aanzetten.";});
+    return;
+  }
+  pushKaarten.forEach(k=>k.hidden=false);
+  const reg=await navigator.serviceWorker.ready;
+  const sub=await reg.pushManager.getSubscription();
+  pushSoorten=(sub&&Notification.permission==="granted")?(leesSoorten()||["uitslagen","nieuws"]):[];
+  tekenPush();
+  if(Notification.permission==="denied"){
+    pushKaarten.forEach(k=>k.querySelector(".schakel").disabled=true);
+    tekenPush("Meldingen zijn geblokkeerd. Zet ze aan in de instellingen van je telefoon of browser.");
+  }
+}
+async function zetPush(soort,aan){
+  const nieuw=aan?Array.from(new Set([...pushSoorten,soort])):pushSoorten.filter(x=>x!==soort);
+  const reg=await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(!nieuw.length){
+    if(sub){await fetch("/api/push/afmelden",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({endpoint:sub.endpoint})}).catch(()=>{});await sub.unsubscribe();}
+  }else{
+    if(Notification.permission!=="granted"){const t=await Notification.requestPermission(); if(t!=="granted") throw new Error("geen toestemming");}
+    if(!sub){const {publicKey}=await (await fetch("/api/push/sleutel")).json();
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uNaarBytes(publicKey)});}
+    const r=await fetch("/api/push/aanmelden",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subscription:sub,soorten:nieuw})});
+    if(!r.ok) throw new Error("aanmelden mislukt");
+  }
+  pushSoorten=nieuw; bewaarSoorten(nieuw); tekenPush();
+}
+pushKaarten.forEach(k=>{const knop=k.querySelector(".schakel");
+  knop.onclick=async()=>{
+    knop.disabled=true;
+    try{ await zetPush(k.dataset.soort, knop.getAttribute("aria-checked")!=="true"); }
+    catch(e){ k.querySelector(".mk-uitleg").textContent=e.message==="geen toestemming"?"Je hebt geen toestemming gegeven voor meldingen.":"Meldingen aanpassen lukte niet. Probeer het later opnieuw."; }
+    finally{ if(!("Notification" in window)||Notification.permission!=="denied") knop.disabled=false; }
+  };});
+startPush();
+
+/* ============================================================
+   7. VOORSPELLEN — ronde van dinsdag t/m maandag
+   ============================================================ */
+const vs={data:null,thuis:0,uit:0};
+function apparaatId(){
+  try{let id=localStorage.getItem("apparaat");
+    if(!id){id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2))+"-"+Date.now().toString(36);localStorage.setItem("apparaat",id);}
+    return id;}catch(e){return "tijdelijk-"+Date.now().toString(36)+Math.random().toString(36).slice(2);}
+}
+function wandDatum(ms){const d=new Date(ms);return {dag:["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"][d.getUTCDay()],d:d.getUTCDate(),m:MAANDEN[d.getUTCMonth()],t:pad(d.getUTCHours())+":"+pad(d.getUTCMinutes())};}
+function tegoed(ms){const u=Math.floor(ms/36e5), m=Math.floor(ms/6e4)%60, d=Math.floor(u/24);
+  return d>=1?`${d} dag${d>1?"en":""} en ${u%24} uur`:u>=1?`${u} uur en ${m} min`:`${Math.max(1,m)} min`;}
+async function laadVoorspel(){
+  const doel=document.getElementById("vsWedstrijd");
+  try{
+    const r=await fetch("/api/voorspel?apparaat="+encodeURIComponent(apparaatId()),{cache:"no-store"});
+    if(!r.ok) throw new Error();
+    vs.data=await r.json(); tekenVoorspel();
+  }catch(e){
+    doel.innerHTML=`<div class="melding">Voorspellen is beschikbaar zodra de app online staat en de wedstrijdgegevens geladen zijn.</div>`;
+    document.getElementById("vsForm").hidden=true; document.getElementById("vsBord").innerHTML="";
+  }
+}
+function tekenVoorspel(){
+  const d=vs.data, w=d.wedstrijd, doel=document.getElementById("vsWedstrijd");
+  const rs=wandDatum(d.ronde.start), re=wandDatum(d.ronde.eind-1);
+  document.getElementById("vsRonde").textContent=`ronde ${rs.d} ${rs.m} – ${re.d} ${re.m}`;
+  if(d.team) document.getElementById("vsSub").textContent=`Voorspel de uitslag van ${d.team}. Elke dinsdag begint een nieuwe ronde.`;
+  const form=document.getElementById("vsForm"), mijn=document.getElementById("vsMijn");
+  if(!w){
+    doel.innerHTML=`<div class="melding">${d.fout?"De wedstrijdgegevens zijn nog niet beschikbaar.":"Deze week speelt "+html(d.team||"Wijnandia 1")+" geen wedstrijd. Dinsdag begint een nieuwe ronde."}</div>`;
+    form.hidden=true; mijn.hidden=true;
+  }else{
+    const a=wandDatum(w.aftrap);
+    const uitslag=w.uitslag?`<span class="vs">${w.uitslag.thuis} – ${w.uitslag.uit}</span>`:`<span class="vs">vs</span>`;
+    const info=w.uitslag?"Eindstand":d.gesloten?"Wedstrijd bezig · voorspellen gesloten"
+      :w.tijdBekend?`Voorspellen kan nog ${tegoed(w.aftrap-d.ronde.nu)}`:`Aanvangstijd nog onbekend · sluit ${a.dag} 00:00`;
+    doel.innerHTML=`<div class="vs-kaart"><div class="wanneer">${a.dag} ${a.d} ${a.m}${w.tijdBekend?" · "+a.t:""}</div>
+      <div class="tegen"><span>${html(w.thuis)}</span>${uitslag}<span>${html(w.uit)}</span></div>
+      <span class="sluit-info">${info}</span></div>`;
+    document.getElementById("vsThuisNaam").textContent=w.thuis; document.getElementById("vsUitNaam").textContent=w.uit;
+    if(d.mijn){
+      form.hidden=true; mijn.hidden=false;
+      mijn.innerHTML=`Jouw voorspelling als <b>${html(d.mijn.naam)}</b>:<div class="groot">${html(w.thuis)} ${d.mijn.thuis} – ${d.mijn.uit} ${html(w.uit)}</div>`+
+        (d.mijn.punten!=null?`Je hebt <b>${d.mijn.punten} punt${d.mijn.punten===1?"":"en"}</b>.`:"Deze kun je niet meer aanpassen. Succes!");
+    }else{
+      mijn.hidden=true; form.hidden=d.gesloten;
+      try{const n=localStorage.getItem("vs:naam"); if(n&&!document.getElementById("vsNaam").value) document.getElementById("vsNaam").value=n;}catch(e){}
+    }
+  }
+  // leaderboard
+  const bord=document.getElementById("vsBord");
+  bord.classList.toggle("uitslag",!!(w&&w.uitslag));
+  if(!d.leaderboard.length){bord.innerHTML=`<div class="vs-leeg">Nog geen voorspellingen deze ronde. Wees de eerste!</div>`;return;}
+  const ik=d.mijn?.naam;
+  bord.innerHTML=d.leaderboard.map((v,i)=>`<div class="vs-rij${v.naam===ik?" ik":""}">
+    <span class="pos">${i+1}</span><span class="nm">${html(v.naam)}</span>
+    <span class="vp">${v.thuis!=null?v.thuis+" – "+v.uit:"✓ voorspeld"}</span>
+    <span class="pt">${v.punten!=null?v.punten+" pt":""}</span></div>`).join("")+
+    (d.gesloten?"":`<div class="vs-leeg">De voorspellingen worden zichtbaar bij de aftrap.</div>`);
+}
+document.querySelectorAll(".stepper button").forEach(b=>b.onclick=()=>{
+  const k=b.dataset.k; vs[k]=Math.max(0,Math.min(20,vs[k]+Number(b.dataset.d)));
+  document.getElementById(k==="thuis"?"vsThuis":"vsUit").textContent=vs[k];
+  document.getElementById("vsBevestig").hidden=true; document.getElementById("vsVerstuur").hidden=false;
+});
+document.getElementById("vsForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const naam=document.getElementById("vsNaam").value.replace(/\s+/g," ").trim(), fout=document.getElementById("vsFout");
+  if(naam.length<2){fout.textContent="Vul eerst je naam in.";document.getElementById("vsNaam").focus();return;}
+  fout.textContent="";
+  const w=vs.data.wedstrijd;
+  document.getElementById("vsSamenvatting").textContent=`${w.thuis} ${vs.thuis} – ${vs.uit} ${w.uit}`;
+  document.getElementById("vsVerstuur").hidden=true; document.getElementById("vsBevestig").hidden=false;
+});
+document.getElementById("vsNee").onclick=()=>{document.getElementById("vsBevestig").hidden=true;document.getElementById("vsVerstuur").hidden=false;};
+document.getElementById("vsJa").onclick=async()=>{
+  const knop=document.getElementById("vsJa"), fout=document.getElementById("vsFout");
+  const naam=document.getElementById("vsNaam").value.replace(/\s+/g," ").trim();
+  knop.disabled=true;
+  try{
+    const r=await fetch("/api/voorspel",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({naam,apparaat:apparaatId(),thuis:vs.thuis,uit:vs.uit})});
+    const d=await r.json();
+    if(!r.ok){fout.textContent=d.fout||"Insturen lukte niet.";document.getElementById("vsBevestig").hidden=true;document.getElementById("vsVerstuur").hidden=false;}
+    else{try{localStorage.setItem("vs:naam",naam)}catch(e){} await laadVoorspel();}
+  }catch(e){fout.textContent="Geen verbinding. Probeer het opnieuw.";}
+  finally{knop.disabled=false;}
+};
+
+
+/* ============================================================
+   8. CLUBNIEUWS — berichten plaatst het bestuur via /beheer.html
+   ============================================================ */
+const nieuws={lijst:[]};
+function nieuwsGezien(){try{return localStorage.getItem("nieuws:gezien")||""}catch(e){return ""}}
+function tekenNieuwsStip(){
+  const nieuwste=nieuws.lijst[0]?.id||"";
+  document.querySelector('nav [data-tab="nieuws"]').classList.toggle("nieuw",!!nieuwste&&nieuwste>nieuwsGezien());
+}
+function nieuwsDatum(t){const d=new Date(t);
+  return `${["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"][d.getDay()]} ${d.getDate()} ${MAANDEN[d.getMonth()]} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;}
+async function laadNieuws(markeer){
+  const doel=document.getElementById("nieuwsLijst");
+  let online=true;
+  try{
+    const r=await fetch("/api/nieuws",{cache:"no-store"}); if(!r.ok) throw new Error();
+    nieuws.lijst=(await r.json()).berichten||[];
+    try{localStorage.setItem("nieuws:cache",JSON.stringify(nieuws.lijst))}catch(e){}
+  }catch(e){
+    online=false;
+    try{nieuws.lijst=JSON.parse(localStorage.getItem("nieuws:cache"))||[]}catch(_){nieuws.lijst=[]}
+  }
+  const gezien=nieuwsGezien();
+  if(!nieuws.lijst.length){
+    doel.innerHTML=`<div class="melding">${online?"Nog geen clubnieuws. Zet meldingen aan, dan hoor je het als eerste.":"Het clubnieuws is te zien zodra de app online staat."}</div>`;
+  }else{
+    doel.innerHTML=nieuws.lijst.map(b=>`<article class="nieuws-kaart${b.id>gezien?" ongelezen":""}">
+      <div class="nk-datum">${nieuwsDatum(b.t)}${b.id>gezien?`<span class="nk-nieuw">Nieuw</span>`:""}</div>
+      <h3>${html(b.titel)}</h3>
+      ${b.tekst?`<p>${html(b.tekst).replace(/\n/g,"<br>")}</p>`:""}
+      ${b.link?`<a class="knop licht klein" href="${html(b.link)}" target="_blank" rel="noopener">Lees meer ↗</a>`:""}
+    </article>`).join("");
+  }
+  if(markeer&&nieuws.lijst[0]){try{localStorage.setItem("nieuws:gezien",nieuws.lijst[0].id)}catch(e){}}
+  tekenNieuwsStip();
+}
+laadNieuws(false);
+setInterval(()=>{ if(!document.hidden) laadNieuws(document.getElementById("nieuws").classList.contains("actief")); },5*60000);
+
+/* ============================================================
+   9. MAN OF THE MATCH — stem op de beste speler van Wijnandia 1
+   De selectie vult het bestuur in via /beheer.html
+   ============================================================ */
+const motm={data:null,keuze:null};
+async function laadMotm(){
+  try{
+    const r=await fetch("/api/motm?apparaat="+encodeURIComponent(apparaatId()),{cache:"no-store"});
+    if(!r.ok) throw new Error();
+    motm.data=await r.json(); tekenMotm();
+  }catch(e){
+    document.getElementById("motmWedstrijd").innerHTML=`<div class="melding">Man of the Match is beschikbaar zodra de app online staat en de uitslagen geladen zijn.</div>`;
+    document.getElementById("motmStem").innerHTML=""; document.getElementById("motmBord").innerHTML="";
+  }
+}
+function tekenMotm(){
+  const d=motm.data, w=d.wedstrijd;
+  const wk=document.getElementById("motmWedstrijd"), st=document.getElementById("motmStem");
+  if(d.team) document.getElementById("motmSub").textContent=`Stem op de beste speler van ${d.team} in de laatste wedstrijd.`;
+  if(!w){
+    wk.innerHTML=`<div class="melding">${d.fout?"De wedstrijdgegevens zijn nog niet beschikbaar.":"Er is nog geen gespeelde wedstrijd. Na de eerste uitslag kun je hier stemmen."}</div>`;
+    st.innerHTML="";
+  }else{
+    const a=wandDatum(w.aftrap);
+    wk.innerHTML=`<div class="vs-kaart"><div class="wanneer">${a.dag} ${a.d} ${a.m}</div>
+      <div class="tegen"><span>${html(w.thuis)}</span><span class="vs">${w.uitslag.thuis} – ${w.uitslag.uit}</span><span>${html(w.uit)}</span></div>
+      <span class="sluit-info">${d.open?`Stemmen kan nog ${tegoed(w.sluit-d.nu)}`:"Stemmen gesloten"}</span></div>`;
+    if(d.telling){
+      const tot=d.totaal||0, rijen=Object.entries(d.telling).sort((x,y)=>y[1]-x[1]);
+      st.innerHTML=`<div class="motm-uitslag">
+        ${d.winnaars?.length?`<p class="motm-winnaar">👑 Man of the Match: <b>${d.winnaars.map(html).join(" &amp; ")}</b></p>`:""}
+        ${d.mijnStem?`<p class="motm-mijn">Jij stemde op <b>${html(d.mijnStem)}</b>.</p>`:""}
+        ${rijen.length?rijen.map(([sp,n])=>`<div class="balk${sp===d.mijnStem?" ik":""}"><div class="balk-kop"><span>${html(sp)}</span><span>${n} stem${n===1?"":"men"} · ${Math.round(n/tot*100)}%</span></div>
+          <div class="balk-baan"><div style="width:${Math.max(4,n/tot*100)}%"></div></div></div>`).join("")
+          :`<div class="melding">Er is niet gestemd voor deze wedstrijd.</div>`}
+        <p class="motm-klein">${tot} stem${tot===1?"":"men"} in totaal${d.open?" · de stand kan nog veranderen tot het stemmen sluit":""}</p></div>`;
+    }else if(!d.spelers.length){
+      st.innerHTML=`<div class="melding">Het bestuur heeft de selectie nog niet ingevuld. Daarna kun je hier stemmen.</div>`;
+    }else{
+      motm.keuze=null;
+      st.innerHTML=`<p class="motm-vraag">Wie was de beste speler?</p>
+        <div class="spelers">${d.spelers.map(sp=>`<button class="speler" type="button" data-s="${html(sp)}" aria-pressed="false">${html(sp)}</button>`).join("")}</div>
+        <p class="vs-fout" id="motmFout" role="alert"></p>
+        <button class="knop hoofd breed" id="motmKnop" type="button" disabled>Kies een speler</button>
+        <p class="motm-klein">Je kunt één keer stemmen en je stem daarna niet meer wijzigen. De stand zie je nadat je hebt gestemd.</p>`;
+      const knop=document.getElementById("motmKnop");
+      st.querySelectorAll(".speler").forEach(b=>b.onclick=()=>{
+        motm.keuze=b.dataset.s;
+        st.querySelectorAll(".speler").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+        knop.disabled=false; knop.textContent="Stem op "+motm.keuze;
+      });
+      knop.onclick=async()=>{
+        if(!motm.keuze) return; knop.disabled=true;
+        const fout=document.getElementById("motmFout"); fout.textContent="";
+        try{
+          const r=await fetch("/api/motm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({apparaat:apparaatId(),speler:motm.keuze})});
+          const res=await r.json().catch(()=>({}));
+          if(!r.ok&&r.status!==409){fout.textContent=res.fout||"Stemmen lukte niet.";knop.disabled=false;return;}
+          await laadMotm();
+        }catch(e){fout.textContent="Geen verbinding. Probeer het opnieuw.";knop.disabled=false;}
+      };
+    }
+  }
+  document.getElementById("motmBord").innerHTML=d.klassement?.length
+    ? d.klassement.map((k,i)=>`<div class="vs-rij"><span class="pos">${i+1}</span><span class="nm">${html(k.speler)}</span>
+        <span class="vp">${k.stemmen} stem${k.stemmen===1?"":"men"}</span><span class="pt">${k.titels?k.titels+"× 👑":""}</span></div>`).join("")
+    : `<div class="vs-leeg">Nog geen Man of the Match dit seizoen.</div>`;
+}
+
+/* ============================================================
+   10. QUIZKLASSEMENT
+   ============================================================ */
+async function laadQuizBord(){
+  const bord=document.getElementById("quizBord"), mijn=document.getElementById("quizMijn");
+  const d=await syncQuiz();
+  const gedaan=quizAntwoord().n===quiz.n;
+  mijn.innerHTML=quiz.huidig?`<div class="quiz-kaart"><div><b>Weekvraag ${(quiz.n%quiz.vragen.length)+1}</b>
+      <span>${gedaan?"Je hebt de vraag van deze week beantwoord.":"Je hebt de vraag van deze week nog niet beantwoord."}</span></div>
+      <button class="knop ${gedaan?"licht":"hoofd"}" id="quizOpen" type="button">${gedaan?"Bekijk":"Speel nu"}</button></div>`:"";
+  document.getElementById("quizOpen")?.addEventListener("click",openQuiz);
+  if(!d){ bord.innerHTML=`<div class="vs-leeg">Het klassement is te zien zodra de app online staat.</div>`; return; }
+  if(d.mijnPositie) mijn.insertAdjacentHTML("beforeend",`<p class="quiz-pos">Je staat op plaats <b>${d.mijnPositie.positie}</b> met <b>${d.mijnPositie.punten} punt${d.mijnPositie.punten===1?"":"en"}</b> als ${html(d.naam||"")} (${d.mijnPositie.gespeeld} ${d.mijnPositie.gespeeld===1?"vraag":"vragen"} gespeeld).</p>`);
+  bord.innerHTML=d.klassement.length
+    ? d.klassement.map((k,i)=>`<div class="vs-rij${k.ik?" ik":""}"><span class="pos">${i+1}</span><span class="nm">${html(k.naam)}</span>
+        <span class="vp">${k.punten} van ${k.gespeeld} goed</span><span class="pt">${k.punten} pt</span></div>`).join("")
+    : `<div class="vs-leeg">Nog niemand in het klassement. Beantwoord de weekvraag en sta bovenaan!</div>`;
+}
+
+/* ---------- Opstartanimatie ---------- */
+(function(){
+  const splash=document.getElementById("splash");
+  let gezien=false; try{gezien=sessionStorage.getItem("splashGezien")==="1"}catch(e){}
+  if(gezien){splash.remove();return;}
+  const woorden=["Hiep,","hiep,","hiep,","hiep,","Hoera,"];
+  const yell=document.getElementById("yell");
+  woorden.forEach((w,i)=>{const s=document.createElement("span");s.textContent=w;
+    if(w.startsWith("Hoera"))s.className="hoera";
+    s.style.animationDelay=(1.0+i*.22)+"s";yell.appendChild(s);});
+  const slot=document.createElement("span");slot.className="groot";slot.textContent="Leve Wijnandia!";
+  slot.style.animationDelay=(1.0+woorden.length*.22+.15)+"s";yell.appendChild(slot);
+  const rustig=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let klaar=false;
+  function sluit(){ if(klaar)return; klaar=true;
+    try{sessionStorage.setItem("splashGezien","1")}catch(e){}
+    splash.classList.add("weg"); setTimeout(()=>splash.remove(),550); }
+  splash.addEventListener("click",sluit);
+  setTimeout(sluit, rustig?1500:3600);
+})();
+
+/* Tabs */
+const APP_VERSIE="1.2.1";
+document.getElementById("infoVersie").textContent=APP_VERSIE;
+const SPEL_DELEN=["voorspellen","motm","quiz"];
+let vorigeTab="uitslagen", spelDeel="voorspellen";
+function toonSpelDeel(deel){
+  spelDeel=deel;
+  document.querySelectorAll(".spel-seg button").forEach(b=>b.classList.toggle("actief",b.dataset.spel===deel));
+  SPEL_DELEN.forEach(x=>document.getElementById("deel-"+x).hidden=x!==deel);
+  if(deel==="voorspellen") laadVoorspel(); else if(deel==="motm") laadMotm(); else laadQuizBord();
+  history.replaceState(null,"","#"+deel);
+}
+function toonTab(id){
+  if(SPEL_DELEN.includes(id)){ spelDeel=id; id="spelen"; }
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("actief",x.dataset.tab===id));
+  document.querySelectorAll("main > section").forEach(s=>s.classList.toggle("actief",s.id===id));
+  document.getElementById("infoKnop").classList.toggle("actief",id==="info");
+  if(id!=="info") vorigeTab=id;
+  history.replaceState(null,"","#"+id); window.scrollTo(0,0);
+  if(id==="spelen") toonSpelDeel(spelDeel);
+  if(id==="nieuws") laadNieuws(true);
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>toonTab(b.dataset.tab));
+document.querySelectorAll(".spel-seg button").forEach(b=>b.onclick=()=>toonSpelDeel(b.dataset.spel));
+document.getElementById("infoKnop").onclick=()=>toonTab(document.getElementById("info").classList.contains("actief")?vorigeTab:"info");
+document.getElementById("infoTerug").onclick=()=>toonTab(vorigeTab);
+{const h=location.hash.slice(1); if(h && (SPEL_DELEN.includes(h) || document.getElementById(h)?.tagName==="SECTION")) toonTab(h);}
+
+render();
+
+/* ---------- Web-app: installeren + offline ---------- */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+let installPrompt=null;
+const knop=document.getElementById("installeer");
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;knop.hidden=false;});
+knop.onclick=async()=>{ if(!installPrompt)return; installPrompt.prompt(); await installPrompt.userChoice; installPrompt=null; knop.hidden=true; };
+window.addEventListener("appinstalled",()=>{knop.hidden=true;});
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+if(isIOS&&!standalone){
+  let gezien=false; try{gezien=localStorage.getItem("iosTipGezien")==="1"}catch(e){}
+  if(!gezien){const t=document.getElementById("iosTip");t.hidden=false;
+    t.onclick=()=>{t.hidden=true;try{localStorage.setItem("iosTipGezien","1")}catch(e){}};}
+}
+</script>
+</body>
+</html>

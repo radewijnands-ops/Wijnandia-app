@@ -1,0 +1,9 @@
+{
+  "name": "wijnandia-app",
+  "private": true,
+  "type": "module",
+  "description": "Web-app van R.K.V.V. Wijnandia (Netlify)",
+  "dependencies": {
+    "@netlify/blobs": ">=8.1.0"
+  }
+}
