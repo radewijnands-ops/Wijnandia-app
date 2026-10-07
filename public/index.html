@@ -306,6 +306,9 @@ nav button.nieuw::after{content:"";position:absolute;top:7px;left:calc(50% + 7px
 .nieuws-kaart.ongelezen{border-color:var(--club-accent);box-shadow:inset 4px 0 0 var(--club-primair)}
 .nk-datum{font-size:12px;font-weight:600;color:var(--tekst-zacht);text-transform:uppercase;letter-spacing:.5px;display:flex;gap:8px;align-items:center}
 .nk-nieuw{background:var(--club-primair);color:#fff;border-radius:99px;padding:2px 8px;font-size:11px;letter-spacing:0}
+.nieuws-kaart.met-foto{padding-top:0;overflow:hidden}
+.nk-foto{display:block;margin:0 -16px 4px;width:calc(100% + 32px);background:#e3e9f3}
+.nk-foto img{display:block;width:100%;max-height:560px;object-fit:contain}
 .nieuws-kaart h3{margin:0;font-size:18px;line-height:1.3;text-wrap:balance}
 .nieuws-kaart p{margin:0;font-size:15px;line-height:1.55;color:var(--tekst)}
 
@@ -327,6 +330,15 @@ nav button.nieuw::after{content:"";position:absolute;top:7px;left:calc(50% + 7px
 .balk-baan{height:10px;background:#e3e9f3;border-radius:99px;overflow:hidden}
 .balk-baan div{height:100%;background:var(--club-accent);border-radius:99px}
 .balk.ik .balk-baan div{background:var(--club-primair)}
+/* ---------- Poll bij nieuws ---------- */
+.poll{width:100%;background:#f4f7fc;border:1px solid var(--rand);border-radius:12px;padding:14px;display:grid;gap:10px;margin-top:4px}
+.poll-kop{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--club-primair)}
+.poll-vraag{margin:0;font-weight:700;font-size:16px;line-height:1.35}
+.poll-opties{display:grid;gap:8px}
+.poll-opties .speler{text-align:left;width:100%}
+.poll .balk-kop span:first-child{overflow-wrap:anywhere}
+.poll-voet{margin:0;font-size:12px;color:var(--tekst-zacht);line-height:1.5}
+.poll .knop{margin-top:2px}
 .quiz-kaart{display:flex;align-items:center;gap:12px;background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px}
 .quiz-kaart>div{flex:1;min-width:0;display:grid;gap:2px;font-size:13px;color:var(--tekst-zacht)}
 .quiz-kaart b{font-size:15px;color:var(--tekst)}
@@ -600,7 +612,7 @@ nav button.nieuw::after{content:"";position:absolute;top:7px;left:calc(50% + 7px
    dan wordt het een hele-dag-activiteit met "Tijd volgt nog".
    locatie en omschrijving zijn optioneel.
    ============================================================ */
-const ACTIVITEITEN = [
+let ACTIVITEITEN = [   // reservelijst; de echte lijst komt van de server (beheerpagina)
   { titel:"Seizoensopening",         datum:"2026-09-20", start:"", eind:"", locatie:"", omschrijving:"" },
   { titel:"Feestavond met DJ",       datum:"2026-09-25", start:"", eind:"", locatie:"", omschrijving:"" },
   { titel:"Speciaal bier avond",     datum:"2026-10-30", start:"", eind:"", locatie:"", omschrijving:"" },
@@ -1266,16 +1278,75 @@ async function laadNieuws(markeer){
   if(!nieuws.lijst.length){
     doel.innerHTML=`<div class="melding">${online?"Nog geen clubnieuws. Zet meldingen aan, dan hoor je het als eerste.":"Het clubnieuws is te zien zodra de app online staat."}</div>`;
   }else{
-    doel.innerHTML=nieuws.lijst.map(b=>`<article class="nieuws-kaart${b.id>gezien?" ongelezen":""}">
+    doel.innerHTML=nieuws.lijst.map(b=>`<article class="nieuws-kaart${b.id>gezien?" ongelezen":""}${b.foto?" met-foto":""}">
+      ${b.foto?`<a class="nk-foto" href="${html(b.foto)}" target="_blank" rel="noopener" aria-label="Foto groot bekijken"><img src="${html(b.foto)}" alt="" loading="lazy"></a>`:""}
       <div class="nk-datum">${nieuwsDatum(b.t)}${b.id>gezien?`<span class="nk-nieuw">Nieuw</span>`:""}</div>
       <h3>${html(b.titel)}</h3>
       ${b.tekst?`<p>${html(b.tekst).replace(/\n/g,"<br>")}</p>`:""}
       ${b.link?`<a class="knop licht klein" href="${html(b.link)}" target="_blank" rel="noopener">Lees meer ↗</a>`:""}
+      ${b.poll?`<div class="poll" data-poll="${html(b.id)}"></div>`:""}
     </article>`).join("");
+    doel.querySelectorAll("[data-poll]").forEach(el=>{
+      const b=nieuws.lijst.find(x=>x.id===el.dataset.poll);
+      tekenPoll(el,b); if(online) laadPoll(el,b);
+    });
   }
   if(markeer&&nieuws.lijst[0]){try{localStorage.setItem("nieuws:gezien",nieuws.lijst[0].id)}catch(e){}}
   tekenNieuwsStip();
 }
+/* ---------- Polls bij nieuws: één stem per telefoon, uitslag na stemmen of na sluiten ---------- */
+const pollStaat={}; // id -> antwoord van /api/poll
+function pollKeuzes(){try{return JSON.parse(localStorage.getItem("poll:keuze"))||{}}catch(e){return {}}}
+async function laadPoll(el,b){
+  try{
+    const r=await fetch(`/api/poll?id=${encodeURIComponent(b.id)}&apparaat=${encodeURIComponent(apparaatId())}`,{cache:"no-store"});
+    if(!r.ok) throw new Error();
+    pollStaat[b.id]=await r.json();
+  }catch(e){ if(!pollStaat[b.id]) pollStaat[b.id]={fout:true}; }
+  tekenPoll(el,b);
+}
+function tekenPoll(el,b){
+  const p=b.poll, d=pollStaat[b.id];
+  const open=d&&!d.fout?d.open:(!p.sluit||Date.now()<p.sluit);
+  const sluitTekst=!open?"Poll gesloten":p.sluit?`Stemmen kan nog ${tegoed(p.sluit-Date.now())}`:"";
+  let binnen;
+  if(d&&d.telling){
+    const tot=d.totaal||0, max=Math.max(...d.telling);
+    binnen=p.opties.map((o,i)=>{const n=d.telling[i]||0, pct=tot?Math.round(n/tot*100):0;
+      return `<div class="balk${i===d.mijnStem?" ik":""}"><div class="balk-kop"><span>${!open&&n===max&&n>0?"🏆 ":""}${html(o)}${i===d.mijnStem?" ✓":""}</span><span>${pct}% · ${n}</span></div>
+        <div class="balk-baan"><div style="width:${tot?Math.max(3,n/tot*100):0}%"></div></div></div>`;}).join("")
+      +`<p class="poll-voet">${tot} stem${tot===1?"":"men"}${sluitTekst?" · "+sluitTekst:""}${open?" · de uitslag kan nog veranderen":""}</p>`;
+  }else if(!open){
+    binnen=`<p class="poll-voet">Deze poll is gesloten.${d?.fout?" De uitslag is te zien zodra je weer online bent.":""}</p>`;
+  }else{
+    const keuze=pollKeuzes()[b.id];
+    binnen=`<div class="poll-opties">${p.opties.map((o,i)=>`<button class="speler" type="button" data-i="${i}" aria-pressed="${i===keuze}">${html(o)}</button>`).join("")}</div>
+      <p class="vs-fout" role="alert"></p>
+      <button class="knop hoofd breed" type="button" ${Number.isInteger(keuze)?"":"disabled"}>${Number.isInteger(keuze)?"Stem":"Kies een antwoord"}</button>
+      <p class="poll-voet">${d&&!d.fout?`${d.totaal} stem${d.totaal===1?"":"men"} tot nu toe · `:""}Je stemt één keer; daarna zie je de uitslag.${sluitTekst?" "+sluitTekst+".":""}</p>`;
+  }
+  el.innerHTML=`<div class="poll-kop">📊 Poll</div><p class="poll-vraag">${html(p.vraag)}</p>${binnen}`;
+  if(d&&d.telling||!open) return;
+  const knop=el.querySelector(".knop"), fout=el.querySelector(".vs-fout");
+  el.querySelectorAll(".speler").forEach(k=>k.onclick=()=>{
+    const ks=pollKeuzes(); ks[b.id]=+k.dataset.i; try{localStorage.setItem("poll:keuze",JSON.stringify(ks))}catch(e){}
+    el.querySelectorAll(".speler").forEach(x=>x.setAttribute("aria-pressed",x===k?"true":"false"));
+    knop.disabled=false; knop.textContent="Stem op “"+p.opties[+k.dataset.i]+"”";
+  });
+  knop.onclick=async()=>{
+    const optie=pollKeuzes()[b.id]; if(!Number.isInteger(optie)) return;
+    knop.disabled=true; knop.textContent="Bezig…"; fout.textContent="";
+    try{
+      const r=await fetch("/api/poll",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:b.id,apparaat:apparaatId(),optie})});
+      const a=await r.json().catch(()=>({}));
+      if(r.ok){ pollStaat[b.id]=a; tekenPoll(el,b); return; }
+      if(r.status===409){ await laadPoll(el,b); return; } // al gestemd of net gesloten
+      fout.textContent=a.fout||"Stemmen lukte niet. Probeer het opnieuw.";
+    }catch(e){ fout.textContent="Geen verbinding. Probeer het opnieuw als je online bent."; }
+    knop.disabled=false; knop.textContent="Stem";
+  };
+}
+
 laadNieuws(false);
 setInterval(()=>{ if(!document.hidden) laadNieuws(document.getElementById("nieuws").classList.contains("actief")); },5*60000);
 
@@ -1389,7 +1460,7 @@ async function laadQuizBord(){
 })();
 
 /* Tabs */
-const APP_VERSIE="1.2.2";
+const APP_VERSIE="1.4.0";
 document.getElementById("infoVersie").textContent=APP_VERSIE;
 const SPEL_DELEN=["voorspellen","motm","quiz"];
 let vorigeTab="uitslagen", spelDeel="voorspellen";
@@ -1417,6 +1488,16 @@ document.getElementById("infoTerug").onclick=()=>toonTab(vorigeTab);
 {const h=location.hash.slice(1); if(h && (SPEL_DELEN.includes(h) || document.getElementById(h)?.tagName==="SECTION")) toonTab(h);}
 
 render();
+/* Activiteiten ophalen die via de beheerpagina zijn ingevoerd */
+(async()=>{
+  const zet=l=>{ if(Array.isArray(l)){ ACTIVITEITEN=l; render(); } };
+  try{ zet(JSON.parse(localStorage.getItem("act:cache"))); }catch(e){}
+  try{
+    const r=await fetch("/api/activiteiten",{cache:"no-store"}); if(!r.ok) throw new Error();
+    const d=await r.json(); zet(d.activiteiten);
+    try{localStorage.setItem("act:cache",JSON.stringify(d.activiteiten))}catch(e){}
+  }catch(e){}
+})();
 
 /* ---------- Web-app: installeren + offline ---------- */
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){

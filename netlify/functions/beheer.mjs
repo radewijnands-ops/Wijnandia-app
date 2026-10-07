@@ -3,14 +3,18 @@
   Het wachtwoord staat in Netlify als BEHEER_WACHTWOORD.
 
   POST   /api/beheer/inloggen                         -> { ok }
-  POST   /api/beheer/nieuws   { titel, tekst, link?, push? } -> bericht plaatsen (+ pushmelding)
+  POST   /api/beheer/nieuws   { titel, tekst, link?, push?, foto?, poll? } -> bericht plaatsen (+ pushmelding)
   DELETE /api/beheer/nieuws?id=<id>                   -> bericht verwijderen
   GET    /api/beheer/spelers                          -> { spelers: [...] }
   PUT    /api/beheer/spelers  { spelers: [...] }      -> selectie voor Man of the Match opslaan
+  POST   /api/beheer/poll-sluiten?id=<id>            -> poll bij een bericht nu sluiten
+  GET/POST/DELETE /api/beheer/activiteiten            -> activiteiten beheren (POST met id = wijzigen)
 */
 import crypto from "node:crypto";
 import { winkel, json, isBeheerder, instelling, hvOphalen } from "../lib/gedeeld.mjs";
 import { stuurAanIedereen } from "../lib/webpush.mjs";
+import { leesActiviteiten, bewaarActiviteiten, controleer } from "../lib/activiteiten.mjs";
+import { wisPoll } from "../lib/polls.mjs";
 
 const kort = (s, n) => String(s || "").trim().slice(0, n);
 
@@ -62,13 +66,39 @@ export default async (req) => {
       const t = Date.now();
       const id = String(t).padStart(15, "0") + "-" + crypto.randomBytes(3).toString("hex");
       const bericht = { id, titel, tekst, link: link || null, t };
+      // optionele poll: vraag + 2 tot 6 antwoorden, optioneel sluitmoment (ms)
+      if (d?.poll) {
+        const vraag = kort(d.poll.vraag, 140);
+        const opties = Array.from(new Set((Array.isArray(d.poll.opties) ? d.poll.opties : [])
+          .map(o => kort(o, 60).replace(/\s+/g, " ")).filter(Boolean)));
+        if (vraag.length < 3) return json(400, { fout: "Vul een pollvraag in (minimaal 3 tekens)." });
+        if (opties.length < 2) return json(400, { fout: "Een poll heeft minimaal 2 verschillende antwoorden nodig." });
+        if (opties.length > 6) return json(400, { fout: "Een poll kan maximaal 6 antwoorden hebben." });
+        let sluit = null;
+        if (d.poll.sluit) {
+          sluit = Number(d.poll.sluit);
+          if (!Number.isFinite(sluit)) return json(400, { fout: "Het sluitmoment van de poll klopt niet." });
+          if (sluit <= t) return json(400, { fout: "Het sluitmoment van de poll ligt in het verleden." });
+        }
+        bericht.poll = { vraag, opties, sluit };
+      }
+      // optionele foto (in de beheerpagina al verkleind tot JPEG)
+      if (d?.foto) {
+        const m = String(d.foto).match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+        if (!m) return json(400, { fout: "De foto kon niet gelezen worden. Probeer een JPG- of PNG-bestand." });
+        const data = Buffer.from(m[2], "base64");
+        if (data.length > 4 * 1024 * 1024) return json(400, { fout: "De foto is te groot (max. 4 MB)." });
+        await winkel("fotos").set(id, data, { metadata: { type: m[1] } });
+        bericht.foto = `/api/foto/${id}`;
+      }
       await st.setJSON(id, bericht);
       let push = null;
       if (d?.push) {
         push = await stuurAanIedereen({
           titel: "📣 " + titel,
-          tekst: tekst.replace(/\s+/g, " ").slice(0, 140) || "Lees het in de Wijnandia-app.",
-          url: "./#nieuws", tag: "nieuws-" + id
+          tekst: bericht.poll ? ("📊 Stem mee: " + bericht.poll.vraag).slice(0, 140)
+            : (tekst.replace(/\s+/g, " ").slice(0, 140) || "Lees het in de Wijnandia-app."),
+          url: "./#nieuws", tag: "nieuws-" + id, afbeelding: bericht.foto || undefined
         }, "nieuws");
       }
       return json(200, { ok: true, bericht, push });
@@ -77,7 +107,62 @@ export default async (req) => {
       const id = url.searchParams.get("id") || "";
       if (!/^[0-9]{15}-[0-9a-f]{6}$/.test(id)) return json(400, { fout: "Onbekend bericht." });
       await st.delete(id);
+      await winkel("fotos").delete(id).catch(() => {});
+      await wisPoll(id).catch(() => {});
       return json(200, { ok: true });
+    }
+  }
+
+  /* Poll nu sluiten (daarna ziet iedereen de uitslag) */
+  if (actie === "poll-sluiten" && req.method === "POST") {
+    const id = url.searchParams.get("id") || "";
+    if (!/^[0-9]{15}-[0-9a-f]{6}$/.test(id)) return json(400, { fout: "Onbekend bericht." });
+    const st = winkel("nieuws");
+    const b = await st.get(id, { type: "json" }).catch(() => null);
+    if (!b?.poll) return json(404, { fout: "Dit bericht heeft geen poll." });
+    b.poll.sluit = Date.now();
+    await st.setJSON(id, b);
+    return json(200, { ok: true, bericht: b });
+  }
+
+  /* Activiteiten: lijst, toevoegen/wijzigen (met id), verwijderen */
+  if (actie === "activiteiten") {
+    if (req.method === "GET") return json(200, { activiteiten: await leesActiviteiten(req) });
+    if (req.method === "POST") {
+      const d = await lees();
+      const c = controleer(d);
+      if (c.fout) return json(400, { fout: c.fout });
+      const lijst = await leesActiviteiten(req);
+      const id = String(d?.id || "");
+      let nieuw = true;
+      if (id) {
+        const i = lijst.findIndex(x => x.id === id);
+        if (i < 0) return json(404, { fout: "Deze activiteit bestaat niet meer. Herlaad de pagina." });
+        lijst[i] = { ...c.activiteit, id }; nieuw = false;
+      } else {
+        lijst.push({ ...c.activiteit, id: "a" + Date.now().toString(36) + crypto.randomBytes(2).toString("hex") });
+      }
+      await bewaarActiviteiten(lijst);
+      let push = null;
+      if (d?.push) {
+        const a = c.activiteit;
+        const dt = new Date(a.datum + "T12:00");
+        const dag = dt.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Amsterdam" });
+        push = await stuurAanIedereen({
+          titel: (nieuw ? "📅 Nieuwe activiteit: " : "📅 Gewijzigd: ") + a.titel,
+          tekst: `${dag}${a.start ? " om " + a.start : ""}${a.locatie ? " · " + a.locatie : ""}. Zet hem met één tik in je agenda.`,
+          url: "./#activiteiten", tag: "activiteit-" + (id || a.titel)
+        }, "nieuws");
+      }
+      return json(200, { ok: true, activiteiten: await leesActiviteiten(req), push });
+    }
+    if (req.method === "DELETE") {
+      const id = url.searchParams.get("id") || "";
+      const lijst = await leesActiviteiten(req);
+      const rest = lijst.filter(x => x.id !== id);
+      if (rest.length === lijst.length) return json(404, { fout: "Onbekende activiteit." });
+      await bewaarActiviteiten(rest);
+      return json(200, { ok: true, activiteiten: rest });
     }
   }
 

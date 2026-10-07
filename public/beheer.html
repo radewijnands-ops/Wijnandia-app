@@ -34,7 +34,7 @@ input:focus,textarea:focus{outline:2px solid var(--club-primair);outline-offset:
 .knop.licht{background:transparent;color:var(--club-primair);border:1.5px solid var(--club-primair)}
 .knop.gevaar{background:transparent;color:var(--rood);border:1.5px solid #f1c4bf;min-height:36px;padding:6px 12px;font-size:13px}
 .knop:disabled{opacity:.5;cursor:default}
-.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:#e3e9f3;border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:#e3e9f3;border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
 .tabs button{border:0;background:transparent;font:600 14px Inter,sans-serif;color:var(--tekst-zacht);padding:10px 0;border-radius:9px;cursor:pointer}
 .tabs button.actief{background:#fff;color:var(--club-donker);box-shadow:0 1px 3px rgba(23,34,56,.12)}
 .melding{font-size:14px;border-radius:10px;padding:10px 12px;line-height:1.5}
@@ -48,11 +48,38 @@ input:focus,textarea:focus{outline:2px solid var(--club-primair);outline-offset:
 .bericht p{margin:0;font-size:14px;line-height:1.5;color:var(--tekst-zacht);white-space:pre-line}
 .teller{font-size:12px;color:var(--tekst-zacht);text-align:right;margin-top:-6px}
 .login{max-width:420px;margin:40px auto}
+input[type=file]{font:500 14px Inter,sans-serif;padding:10px;border:1.5px dashed var(--rand);border-radius:10px;background:#fbfcfe}
+.foto-voorbeeld{display:grid;gap:8px;justify-items:start}
+.foto-voorbeeld img{max-width:100%;max-height:260px;border-radius:12px;border:1px solid var(--rand)}
+.bericht img{max-width:160px;border-radius:8px;border:1px solid var(--rand)}
+.rij3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px}
+@media (max-width:480px){.rij3{grid-template-columns:1fr 1fr}.rij3 label:first-child{grid-column:1/-1}}
+.knoppen-rij{display:flex;gap:10px;flex-wrap:wrap}
+.act{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center}
+.act.voorbij{opacity:.55}
+.act .dt{background:var(--club-primair);color:#fff;border-radius:10px;text-align:center;padding:6px 0;line-height:1.1}
+.act .dt b{display:block;font:800 22px "Barlow Condensed","Arial Narrow",sans-serif}
+.act .dt span{font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.act h3{margin:0;font-size:15px}
+.act .info{font-size:13px;color:var(--tekst-zacht);margin-top:2px}
+.act .info .geen{color:#b56a00;font-weight:600}
+.act .acties{display:flex;flex-direction:column;gap:6px}
+.knop.klein2{min-height:34px;padding:6px 12px;font-size:13px}
+.tabs button{font-size:13px}
 .test-blok{border:1px solid var(--rand);border-radius:12px;padding:12px 14px;display:grid;gap:4px}
 .test-blok.ok{border-color:#a8dbb9;background:#f3fbf6}.test-blok.nok{border-color:#f1c4bf;background:#fff7f6}
 .test-blok p{margin:0;font-size:14px;line-height:1.5}.test-blok .klein{font-size:12px;color:var(--tekst-zacht);word-break:break-word}
 .test-blok code{background:#eef2f8;padding:1px 6px;border-radius:6px}.rood{color:var(--rood)}
 #testUitslag{display:grid;gap:10px}
+.poll-blok{border:1.5px dashed var(--rand);border-radius:12px;padding:14px;display:grid;gap:10px;background:#fbfcfe}
+.poll-optie{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.poll-optie .knop.gevaar{min-height:44px}
+input[type=datetime-local]{font:500 16px Inter,sans-serif;padding:11px;border:1.5px solid var(--rand);border-radius:10px;background:#fff;color:var(--tekst);width:100%}
+.poll-uitslag{background:#f4f7fc;border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:14px}
+.poll-uitslag .r{display:grid;grid-template-columns:1fr auto;gap:8px}
+.poll-uitslag .baan{grid-column:1/-1;height:8px;background:#e3e9f3;border-radius:99px;overflow:hidden}
+.poll-uitslag .baan div{height:100%;background:var(--club-primair)}
+.poll-uitslag .klein{font-size:12px;color:var(--tekst-zacht)}
 </style>
 </head>
 <body>
@@ -75,6 +102,7 @@ input:focus,textarea:focus{outline:2px solid var(--club-primair);outline-offset:
   <div id="beheer" hidden>
     <div class="tabs" role="tablist">
       <button class="actief" data-tab="nieuws" type="button">Clubnieuws</button>
+      <button data-tab="activiteiten" type="button">Activiteiten</button>
       <button data-tab="selectie" type="button">Selectie MotM</button>
       <button data-tab="koppeling" type="button">Koppeling</button>
     </div>
@@ -82,18 +110,53 @@ input:focus,textarea:focus{outline:2px solid var(--club-primair);outline-offset:
     <!-- Clubnieuws -->
     <section id="tab-nieuws">
       <h2>Nieuw bericht</h2>
-      <p class="sub">Het bericht verschijnt direct in de app onder Nieuws.</p>
+      <p class="sub">Het bericht verschijnt direct in de app onder Nieuws. Je kunt er een foto of poster bij zetten (wordt automatisch verkleind) en een poll waarop leden kunnen stemmen.</p>
       <form class="kaart" id="nieuwsForm">
         <label for="titel">Titel<input id="titel" type="text" maxlength="80" required placeholder="Bijv. Training vanavond afgelast"></label>
         <label for="tekst">Tekst<textarea id="tekst" maxlength="2000" placeholder="Het veld is afgekeurd door de gemeente. Donderdag trainen we weer zoals gewoonlijk."></textarea></label>
         <div class="teller" id="teller">0 / 2000</div>
         <label for="link">Link (optioneel)<input id="link" type="text" inputmode="url" autocapitalize="off" spellcheck="false" maxlength="300" placeholder="https://..."></label>
+        <label for="foto">Foto of poster (optioneel)<input id="foto" type="file" accept="image/*"></label>
+        <div class="foto-voorbeeld" id="fotoVoorbeeld" hidden><img id="fotoImg" alt="Voorbeeld"><button class="knop gevaar" type="button" id="fotoWeg">Foto weghalen</button></div>
+        <label class="vink"><input type="checkbox" id="metPoll"> Poll toevoegen (leden kunnen stemmen in de app)</label>
+        <div class="poll-blok" id="pollBlok" hidden>
+          <label for="pollVraag">Pollvraag<input id="pollVraag" type="text" maxlength="140" placeholder="Bijv. Welke datum past jou het best voor de feestavond?"></label>
+          <div id="pollOpties" style="display:grid;gap:8px"></div>
+          <button class="knop licht" type="button" id="pollErbij">+ Antwoord toevoegen</button>
+          <label for="pollSluit">Poll sluiten op (optioneel)<input id="pollSluit" type="datetime-local"></label>
+          <p class="sub" style="margin:0">Leden stemmen één keer per telefoon en zien daarna de uitslag. Zonder sluitdatum blijft de poll open tot je hem sluit in de lijst hieronder.</p>
+        </div>
         <label class="vink"><input type="checkbox" id="push" checked> Stuur ook een pushmelding naar leden met meldingen voor clubnieuws aan</label>
         <p class="melding" id="nieuwsMelding" hidden></p>
         <button class="knop" type="submit" id="plaats">Bericht plaatsen</button>
       </form>
       <h2 style="margin-top:28px">Geplaatste berichten</h2>
       <div class="lijst" id="berichten"><p class="sub">Laden…</p></div>
+    </section>
+
+    <!-- Activiteiten -->
+    <section id="tab-activiteiten" hidden>
+      <h2 id="actKop">Nieuwe activiteit</h2>
+      <p class="sub">Activiteiten verschijnen direct in de app onder Activiteiten, waar leden ze met één tik in hun agenda zetten. Is de tijd nog niet bekend? Laat de tijd dan leeg en vul hem later in via <b>Bewerken</b>.</p>
+      <form class="kaart" id="actForm">
+        <input type="hidden" id="actId">
+        <label for="actTitel">Naam van de activiteit<input id="actTitel" type="text" maxlength="80" required placeholder="Bijv. Darttoernooi"></label>
+        <div class="rij3">
+          <label for="actDatum">Datum<input id="actDatum" type="date" required></label>
+          <label for="actStart">Begintijd<input id="actStart" type="time"></label>
+          <label for="actEind">Eindtijd<input id="actEind" type="time"></label>
+        </div>
+        <label for="actLocatie">Locatie (optioneel)<input id="actLocatie" type="text" maxlength="100" placeholder="Bijv. Kantine Wijnandia"></label>
+        <label for="actOmschr">Omschrijving (optioneel)<textarea id="actOmschr" maxlength="500" style="min-height:80px" placeholder="Bijv. Inschrijven vanaf 19:30, deelname € 5."></textarea></label>
+        <label class="vink"><input type="checkbox" id="actPush"> Stuur ook een pushmelding (naar leden met meldingen voor clubnieuws aan)</label>
+        <p class="melding" id="actMelding" hidden></p>
+        <div class="knoppen-rij">
+          <button class="knop" type="submit" id="actOpslaan">Activiteit toevoegen</button>
+          <button class="knop licht" type="button" id="actAnnuleer" hidden>Annuleren</button>
+        </div>
+      </form>
+      <h2 style="margin-top:28px">Alle activiteiten</h2>
+      <div class="lijst" id="actLijst"><p class="sub">Laden…</p></div>
     </section>
 
     <!-- Koppeling -->
@@ -135,7 +198,7 @@ async function inloggen(ww){
   const r=await api("inloggen",{method:"POST",body:"{}"}).catch(()=>null);
   if(r&&r.ok){ try{sessionStorage.setItem("beheer",ww)}catch(e){}
     $("loginForm").hidden=true; $("beheer").hidden=false; $("uitloggen").hidden=false;
-    laadBerichten(); laadSelectie(); return true; }
+    laadBerichten(); laadSelectie(); laadActiviteiten(); return true; }
   const d=r?await r.json().catch(()=>({})):{};
   toon($("loginFout"), r?(d.fout||"Inloggen lukte niet."):"Geen verbinding met de server.","fout");
   wachtwoord=""; return false;
@@ -144,11 +207,72 @@ $("loginForm").onsubmit=e=>{e.preventDefault(); $("loginFout").hidden=true; inlo
 $("uitloggen").onclick=()=>{try{sessionStorage.removeItem("beheer")}catch(e){} location.reload();};
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("actief",x===b));
-  ["nieuws","selectie","koppeling"].forEach(t=>$("tab-"+t).hidden=b.dataset.tab!==t);
+  ["nieuws","activiteiten","selectie","koppeling"].forEach(t=>$("tab-"+t).hidden=b.dataset.tab!==t);
 });
 
 /* ---------- Nieuws ---------- */
 $("tekst").oninput=()=>$("teller").textContent=$("tekst").value.length+" / 2000";
+/* Foto verkleinen in de browser (max. 1600 px, JPEG) zodat hij snel laadt in de app */
+let fotoData="";
+async function verklein(bestand){
+  let bron;
+  try{ bron=await createImageBitmap(bestand,{imageOrientation:"from-image"}); }
+  catch(e){ bron=await new Promise((ok,nee)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=nee;i.src=URL.createObjectURL(bestand);}); }
+  const max=1600, f=Math.min(1,max/Math.max(bron.width,bron.height));
+  const c=document.createElement("canvas"); c.width=Math.round(bron.width*f); c.height=Math.round(bron.height*f);
+  const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(bron,0,0,c.width,c.height);
+  return c.toDataURL("image/jpeg",0.85);
+}
+$("foto").onchange=async()=>{
+  const b=$("foto").files[0]; fotoData=""; $("fotoVoorbeeld").hidden=true; if(!b) return;
+  if(!b.type.startsWith("image/")){ toon($("nieuwsMelding"),"Kies een afbeelding (JPG of PNG).","fout"); $("foto").value=""; return; }
+  try{ fotoData=await verklein(b); $("fotoImg").src=fotoData; $("fotoVoorbeeld").hidden=false; $("nieuwsMelding").hidden=true; }
+  catch(e){ toon($("nieuwsMelding"),"Deze foto kon niet gelezen worden. Probeer een JPG- of PNG-bestand.","fout"); $("foto").value=""; }
+};
+$("fotoWeg").onclick=()=>{fotoData="";$("foto").value="";$("fotoVoorbeeld").hidden=true;};
+/* Poll */
+function pollOptie(waarde=""){
+  const rij=document.createElement("div"); rij.className="poll-optie";
+  rij.innerHTML=`<input type="text" maxlength="60" placeholder="Antwoord"><button class="knop gevaar" type="button" aria-label="Antwoord weghalen">✕</button>`;
+  rij.querySelector("input").value=waarde;
+  rij.querySelector("button").onclick=()=>{ if($("pollOpties").children.length>2){rij.remove();pollKnoppen();} };
+  $("pollOpties").appendChild(rij); pollKnoppen();
+}
+function pollKnoppen(){
+  const n=$("pollOpties").children.length;
+  [...$("pollOpties").children].forEach((r,i)=>{r.querySelector("input").placeholder="Antwoord "+(i+1);r.querySelector("button").hidden=n<=2;});
+  $("pollErbij").hidden=n>=6;
+}
+function pollLeeg(){ $("pollOpties").innerHTML=""; pollOptie(); pollOptie(); $("pollVraag").value=""; $("pollSluit").value=""; }
+$("pollErbij").onclick=()=>{pollOptie(); $("pollOpties").lastChild.querySelector("input").focus();};
+$("metPoll").onchange=()=>{ $("pollBlok").hidden=!$("metPoll").checked; if($("metPoll").checked&&!$("pollOpties").children.length) pollLeeg(); if($("metPoll").checked) $("pollVraag").focus(); };
+function leesPoll(){
+  if(!$("metPoll").checked) return {};
+  const vraag=$("pollVraag").value.trim();
+  const opties=[...$("pollOpties").querySelectorAll("input")].map(i=>i.value.trim()).filter(Boolean);
+  if(vraag.length<3) return {fout:"Vul een pollvraag in (minimaal 3 tekens).",veld:$("pollVraag")};
+  if(opties.length<2) return {fout:"Vul minimaal 2 antwoorden in voor de poll."};
+  if(new Set(opties.map(o=>o.toLowerCase())).size!==opties.length) return {fout:"Twee antwoorden zijn hetzelfde. Maak ze verschillend."};
+  let sluit=null;
+  if($("pollSluit").value){ sluit=new Date($("pollSluit").value).getTime(); if(!(sluit>Date.now())) return {fout:"De sluitdatum van de poll ligt in het verleden.",veld:$("pollSluit")}; }
+  return {poll:{vraag,opties,sluit}};
+}
+async function toonPollUitslag(el,b){
+  const r=await fetch("/api/poll?id="+encodeURIComponent(b.id),{cache:"no-store",headers:{"X-Beheer":wachtwoord}}).catch(()=>null);
+  const d=r&&r.ok?await r.json():null;
+  if(!d||!d.telling){ el.innerHTML=`<span class="klein">Uitslag kon niet geladen worden.</span>`; return; }
+  const tot=d.totaal;
+  el.innerHTML=`<b>📊 ${esc(b.poll.vraag)}</b>`+b.poll.opties.map((o,i)=>{const n=d.telling[i]; return `<div class="r"><span>${esc(o)}</span><span>${tot?Math.round(n/tot*100):0}% · ${n}</span><div class="baan"><div style="width:${tot?n/tot*100:0}%"></div></div></div>`;}).join("")
+    +`<span class="klein">${tot} stem${tot===1?"":"men"} · ${d.open?(d.sluit?"sluit "+new Date(d.sluit).toLocaleString("nl-NL",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"open (geen sluitdatum)"):"gesloten"}</span>`
+    +(d.open?`<button class="knop gevaar" type="button" style="justify-self:start">Poll nu sluiten</button>`:"");
+  const k=el.querySelector("button"); if(!k) return;
+  k.onclick=async()=>{
+    if(k.dataset.bevestig!=="1"){ k.dataset.bevestig="1"; k.textContent="Zeker weten? Iedereen ziet dan de uitslag"; setTimeout(()=>{k.dataset.bevestig="";k.textContent="Poll nu sluiten";},4000); return; }
+    k.disabled=true;
+    const r=await api("poll-sluiten?id="+encodeURIComponent(b.id),{method:"POST",body:"{}"}).catch(()=>null);
+    if(r&&r.ok) toonPollUitslag(el,b); else { k.disabled=false; k.textContent="Mislukt, opnieuw"; }
+  };
+}
 async function laadBerichten(){
   const r=await fetch("/api/nieuws",{cache:"no-store"}).catch(()=>null);
   const lijst=r&&r.ok?(await r.json()).berichten:[];
@@ -157,8 +281,10 @@ async function laadBerichten(){
     return `<div class="bericht"><div class="kop"><div><h3>${esc(b.titel)}</h3>
       <div class="datum">${d.toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})} · ${d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}</div></div>
       <button class="knop gevaar" data-id="${esc(b.id)}" type="button">Verwijderen</button></div>
-      ${b.tekst?`<p>${esc(b.tekst)}</p>`:""}${b.link?`<p>🔗 ${esc(b.link)}</p>`:""}</div>`;}).join("")
+      ${b.foto?`<img src="${esc(b.foto)}" alt="">`:""}${b.tekst?`<p>${esc(b.tekst)}</p>`:""}${b.link?`<p>🔗 ${esc(b.link)}</p>`:""}
+      ${b.poll?`<div class="poll-uitslag" data-poll="${esc(b.id)}"><span class="klein">Poll laden…</span></div>`:""}</div>`;}).join("")
     :`<p class="sub">Nog geen berichten geplaatst.</p>`;
+  $("berichten").querySelectorAll("[data-poll]").forEach(el=>toonPollUitslag(el,lijst.find(b=>b.id===el.dataset.poll)));
   $("berichten").querySelectorAll("[data-id]").forEach(k=>k.onclick=async()=>{
     if(k.dataset.bevestig!=="1"){ k.dataset.bevestig="1"; k.textContent="Zeker weten?"; setTimeout(()=>{k.dataset.bevestig="";k.textContent="Verwijderen";},4000); return; }
     k.disabled=true;
@@ -170,13 +296,15 @@ $("nieuwsForm").onsubmit=async e=>{
   e.preventDefault();
   const knop=$("plaats"), m=$("nieuwsMelding"); m.hidden=true;
   if($("titel").value.trim().length<3){ toon(m,"Vul een titel in van minimaal 3 tekens.","fout"); $("titel").focus(); return; }
+  const pl=leesPoll(); if(pl.fout){ toon(m,pl.fout,"fout"); (pl.veld||$("pollVraag")).focus(); return; }
   knop.disabled=true; knop.textContent="Bezig met plaatsen…";
   try{
-    const r=await api("nieuws",{method:"POST",body:JSON.stringify({titel:$("titel").value,tekst:$("tekst").value,link:$("link").value,push:$("push").checked})});
+    const r=await api("nieuws",{method:"POST",body:JSON.stringify({titel:$("titel").value,tekst:$("tekst").value,link:$("link").value,push:$("push").checked,foto:fotoData||undefined,poll:pl.poll})});
     const d=await r.json().catch(()=>({}));
     if(!r.ok){ toon(m,d.fout||"Plaatsen lukte niet.","fout"); return; }
     toon(m, "Geplaatst." + (d.push?` Pushmelding verstuurd naar ${d.push.verstuurd} telefoon${d.push.verstuurd===1?"":"s"}.`:""),"ok");
-    $("nieuwsForm").reset(); $("push").checked=true; $("teller").textContent="0 / 2000";
+    $("nieuwsForm").reset(); $("push").checked=true; $("teller").textContent="0 / 2000"; fotoData=""; $("fotoVoorbeeld").hidden=true;
+    $("pollBlok").hidden=true; pollLeeg();
     laadBerichten();
   }catch(err){ toon(m,"Geen verbinding met de server. Probeer het opnieuw.","fout"); }
   finally{ knop.disabled=false; knop.textContent="Bericht plaatsen"; }
@@ -196,6 +324,62 @@ $("selectieForm").onsubmit=async e=>{
   const d=r?await r.json().catch(()=>({})):{};
   if(r&&r.ok){ $("spelers").value=d.spelers.join("\n"); telSpelers(); toon(m,`Opgeslagen: ${d.spelers.length} spelers.`,"ok"); }
   else toon(m,d.fout||"Opslaan lukte niet.","fout");
+};
+
+/* ---------- Activiteiten ---------- */
+const MND=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"], DG=["zo","ma","di","wo","do","vr","za"];
+let activiteiten=[];
+function actFormLeeg(){
+  $("actForm").reset(); $("actId").value=""; $("actKop").textContent="Nieuwe activiteit";
+  $("actOpslaan").textContent="Activiteit toevoegen"; $("actAnnuleer").hidden=true;
+}
+function tekenActiviteiten(){
+  const vandaag=new Date(); vandaag.setHours(0,0,0,0);
+  $("actLijst").innerHTML=activiteiten.length?activiteiten.map(a=>{
+    const d=new Date(a.datum+"T12:00"), voorbij=d<vandaag;
+    const tijd=a.start?`${a.start}${a.eind?" – "+a.eind:""}`:`<span class="geen">Tijd nog niet ingevuld</span>`;
+    return `<div class="act${voorbij?" voorbij":""}">
+      <div class="dt"><span>${DG[d.getDay()]}</span><b>${d.getDate()}</b><span>${MND[d.getMonth()]}</span></div>
+      <div><h3>${esc(a.titel)}</h3><div class="info">🕒 ${tijd}${a.locatie?" · 📍 "+esc(a.locatie):""}</div>
+        ${a.omschrijving?`<div class="info">${esc(a.omschrijving)}</div>`:""}</div>
+      <div class="acties"><button class="knop licht klein2" type="button" data-bewerk="${esc(a.id)}">Bewerken</button>
+        <button class="knop gevaar" type="button" data-weg="${esc(a.id)}">Verwijderen</button></div></div>`;}).join("")
+    :`<p class="sub">Nog geen activiteiten.</p>`;
+  $("actLijst").querySelectorAll("[data-bewerk]").forEach(k=>k.onclick=()=>{
+    const a=activiteiten.find(x=>x.id===k.dataset.bewerk); if(!a) return;
+    $("actId").value=a.id; $("actTitel").value=a.titel; $("actDatum").value=a.datum; $("actStart").value=a.start||""; $("actEind").value=a.eind||"";
+    $("actLocatie").value=a.locatie||""; $("actOmschr").value=a.omschrijving||""; $("actPush").checked=false;
+    $("actKop").textContent="Activiteit bewerken"; $("actOpslaan").textContent="Wijzigingen opslaan"; $("actAnnuleer").hidden=false;
+    $("actMelding").hidden=true; $("actForm").scrollIntoView({behavior:"smooth",block:"start"}); $("actStart").focus();
+  });
+  $("actLijst").querySelectorAll("[data-weg]").forEach(k=>k.onclick=async()=>{
+    if(k.dataset.bevestig!=="1"){ k.dataset.bevestig="1"; k.textContent="Zeker weten?"; setTimeout(()=>{k.dataset.bevestig="";k.textContent="Verwijderen";},4000); return; }
+    k.disabled=true;
+    const r=await api("activiteiten?id="+encodeURIComponent(k.dataset.weg),{method:"DELETE"}).catch(()=>null);
+    if(r&&r.ok){ activiteiten=(await r.json()).activiteiten; if($("actId").value===k.dataset.weg) actFormLeeg(); tekenActiviteiten(); }
+    else { k.disabled=false; k.textContent="Mislukt, opnieuw"; }
+  });
+}
+async function laadActiviteiten(){
+  const r=await api("activiteiten").catch(()=>null);
+  if(r&&r.ok){ activiteiten=(await r.json()).activiteiten||[]; tekenActiviteiten(); }
+  else $("actLijst").innerHTML=`<p class="melding fout">Activiteiten laden lukte niet.</p>`;
+}
+$("actAnnuleer").onclick=()=>{actFormLeeg();$("actMelding").hidden=true;};
+$("actForm").onsubmit=async e=>{
+  e.preventDefault();
+  const m=$("actMelding"), knop=$("actOpslaan"); m.hidden=true;
+  const wijzigen=!!$("actId").value;
+  knop.disabled=true;
+  try{
+    const r=await api("activiteiten",{method:"POST",body:JSON.stringify({id:$("actId").value,titel:$("actTitel").value,datum:$("actDatum").value,
+      start:$("actStart").value,eind:$("actEind").value,locatie:$("actLocatie").value,omschrijving:$("actOmschr").value,push:$("actPush").checked})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ toon(m,d.fout||"Opslaan lukte niet.","fout"); return; }
+    activiteiten=d.activiteiten; tekenActiviteiten(); actFormLeeg();
+    toon(m,(wijzigen?"Wijzigingen opgeslagen.":"Activiteit toegevoegd.")+(d.push?` Pushmelding verstuurd naar ${d.push.verstuurd} telefoon${d.push.verstuurd===1?"":"s"}.`:"")+" Leden zien het direct in de app.","ok");
+  }catch(err){ toon(m,"Geen verbinding met de server. Probeer het opnieuw.","fout"); }
+  finally{ knop.disabled=false; }
 };
 
 /* ---------- Koppeling testen ---------- */

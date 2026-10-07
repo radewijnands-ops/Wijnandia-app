@@ -1,0 +1,94 @@
+{
+ "activiteiten": [
+  {
+   "id": "a2026092000",
+   "titel": "Seizoensopening",
+   "datum": "2026-09-20",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2026092501",
+   "titel": "Feestavond met DJ",
+   "datum": "2026-09-25",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2026103002",
+   "titel": "Speciaal bier avond",
+   "datum": "2026-10-30",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2026121903",
+   "titel": "Darttoernooi",
+   "datum": "2026-12-19",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2027010704",
+   "titel": "Nieuwjaarsborrel",
+   "datum": "2027-01-07",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2027021105",
+   "titel": "Haringhappen",
+   "datum": "2027-02-11",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2027030506",
+   "titel": "Quiz avond",
+   "datum": "2027-03-05",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2027051707",
+   "titel": "Seizoensafsluiting",
+   "datum": "2027-05-17",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2027052308",
+   "titel": "Kermiszondag",
+   "datum": "2027-05-23",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  },
+  {
+   "id": "a2027061209",
+   "titel": "Jeu de Boules toernooi",
+   "datum": "2027-06-12",
+   "start": "",
+   "eind": "",
+   "locatie": "",
+   "omschrijving": ""
+  }
+ ]
+}

@@ -18,6 +18,7 @@ Mappen
     beheer.mjs               beheer door het bestuur (nieuws plaatsen, selectie)
     motm.mjs                 Man of the Match: stemmen en seizoensklassement
     quiz.mjs                 weekquiz: antwoorden en klassement
+    poll.mjs                 polls bij clubnieuws: stemmen en uitslag
 - netlify/lib/               gedeelde code voor de functies
 - netlify.toml, package.json instellingen voor Netlify (niet aanpassen)
 
@@ -126,7 +127,8 @@ INSTALLEREN OP DE TELEFOON
 AANPASSEN
 ---------
 - Kleuren: bovenaan public/index.html (--club-primair, --club-secundair, --club-accent).
-- Activiteiten: in public/index.html bij "3. ACTIVITEITEN".
+- Activiteiten: via de beheerpagina (tabblad Activiteiten): toevoegen, tijden aanpassen,
+  verwijderen. (De lijst in public/activiteiten.json wordt alleen de allereerste keer gebruikt.)
 
 
 CLUBNIEUWS (BEHEERPAGINA)
@@ -173,3 +175,21 @@ ROUTE NAAR UITWEDSTRIJDEN
 - De app zoekt automatisch op "<clubnaam> voetbalvereniging sportpark". Komt dat
   ergens niet goed uit, zet dan het juiste adres in public/index.html bij SPORTPARKEN:
       "VV Bergdal": "Sportpark De Berg, Bergweg 1, Bergdal",
+
+
+FOTO'S BIJ NIEUWS
+-----------------
+Op de beheerpagina kun je bij een nieuwsbericht een foto of poster kiezen. De browser
+verkleint hem automatisch (max. 1600 pixels). De foto staat in Netlify-opslag en wordt
+samen met het bericht verwijderd. Bij een pushmelding wordt de foto op Android ook getoond.
+
+
+POLLS BIJ NIEUWS
+----------------
+- Op de beheerpagina zet je bij een nieuwsbericht het vinkje "Poll toevoegen" aan en
+  vul je een vraag en 2 tot 6 antwoorden in. Een sluitdatum is optioneel.
+- Leden stemmen in de app onder het bericht: één stem per telefoon, niet te wijzigen.
+  Na het stemmen zien ze de tussenstand; wie nog niet stemde ziet alleen het aantal stemmen.
+- Na het sluiten (sluitdatum of knop "Poll nu sluiten" op de beheerpagina) ziet iedereen
+  de uitslag. Het bestuur ziet de uitslag op de beheerpagina altijd.
+- De stemmen staan in Netlify-opslag "polls" en worden met het bericht verwijderd.
